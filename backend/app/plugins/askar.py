@@ -3,12 +3,12 @@ from fastapi import HTTPException
 from aries_askar import Store, error, Key
 from config import settings
 from app.utilities import create_did_doc
-from . import multibase
 import hashlib
 import uuid
 from datetime import datetime, timezone, timedelta
 from hashlib import sha256
 import canonicaljson
+from multiformats import multibase
 
 
 class AskarStorage:
@@ -51,7 +51,7 @@ class AskarStorage:
                     {"~plaintag": "a", "enctag": "b"},
                 )
         except:
-            raise HTTPException(status_code=404, detail="Couldn't store record.")
+            raise HTTPException(status_code=400, detail="Couldn't store record.")
 
     async def update(self, category, data_key, data):
         store = await self.open()
@@ -65,6 +65,25 @@ class AskarStorage:
                 )
         except:
             raise HTTPException(status_code=404, detail="Couldn't update record.")
+        
+    async def add_issuer(self, did, name, description):
+        issuer_registrations = await AskarStorage().fetch('registration', 'issuers')
+        if next(
+            (
+                issuer
+                for issuer in issuer_registrations['issuers']
+                if issuer["id"]
+                == did
+            ),
+            None,
+        ):
+            raise HTTPException(status_code=419, detail="Issuer already exists.")
+        issuer_registrations['issuers'].append({
+            'id': did,
+            'name': name,
+            'description': description,
+        })
+        issuer_registrations = await AskarStorage().update('registration', 'issuers', issuer_registrations)
 
 
 class AskarVerifier:

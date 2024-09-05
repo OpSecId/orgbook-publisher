@@ -1,7 +1,8 @@
 from fastapi import HTTPException
 from config import settings
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import requests
+import secrets
 
 class AgentController:
     def __init__(self):
@@ -11,23 +12,27 @@ class AgentController:
         self.endorser_vm = settings.ENDORSER_VM
         
     def register_did(self, did, seed=None):
-        r = requests.post(f'{self.server}/did/web', headers=self.headers, json={
+        # TODO remove this section once seed is optional in acapy
+        if not seed:
+            seed = secrets.token_hex(16)
+        r = requests.post(f'{self.endpoint}/did/web', headers=self.headers, json={
             "id": f"{did}#key-01",
             "key_type": "ed25519",
             "seed": seed,
             "type": "MultiKey"
         })
         try:
-            return r.json()["verification_method"]
+            return r.json()["verificationMethod"]
         except:
             raise HTTPException(status_code=r.status_code, detail="Couldn't create did.")
         
-    def issuer_proof_options(self):
+    def issuer_proof_options(self, verification_method):
         return {
             'type': 'DataIntegrityProof',
             'cryptosuite': 'eddsa-jcs-2022',
             'proofPurpose': 'assertionMethod',
-            'created': datetime.now(),
+            'verificationMethod': verification_method,
+            'created': str(datetime.now(timezone.utc).isoformat("T", "seconds")),
         }
         
     def endorser_proof_options(self):
@@ -36,22 +41,32 @@ class AgentController:
             'cryptosuite': 'eddsa-jcs-2022',
             'verificationMethod': self.endorser_vm,
             'proofPurpose': 'authentication',
-            'created': datetime.now(),
-            'expires': datetime.now(),
+            'created': str(datetime.now(timezone.utc).isoformat("T", "seconds")),
+            'expires': str(
+                (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat(
+                    "T", "seconds"
+                )
+            )
         }
         
         
     def sign_document(self, document, options):
-        r = requests.post(f'{self.server}/wallet/add-di-proof', headers=self.headers, json={
+        r = requests.post(f'{self.endpoint}/wallet/di/add-proof', headers=self.headers, json={
             'document': document,
             'options': options
         })
-        signed_document = r.json()
+        try:
+            return r.json()['securedDocument']
+        except:
+            raise HTTPException(status_code=r.status_code, detail="Couldn't sign document.")
         
     def endorse_document(self, document, options):
         options['verificationMethod'] = self.endorser_vm
-        r = requests.post(f'{self.server}/wallet/add-di-proof', headers=self.headers, json={
+        r = requests.post(f'{self.endpoint}/wallet/di/add-proof', headers=self.headers, json={
             'document': document,
             'options': options
         })
-        endorsed_document = r.json()
+        try:
+            return r.json()['securedDocument']
+        except:
+            raise HTTPException(status_code=r.status_code, detail="Couldn't endorser document.")

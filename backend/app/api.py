@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.responses import JSONResponse
-from app.routers import issuers
+from app.routers import issuers, credentials
 from config import settings
 
 app = FastAPI(title=settings.PROJECT_TITLE, version=settings.PROJECT_VERSION)
@@ -9,6 +9,7 @@ app = FastAPI(title=settings.PROJECT_TITLE, version=settings.PROJECT_VERSION)
 api_router = APIRouter()
 
 api_router.include_router(issuers.router, tags=["Issuers"])
+api_router.include_router(credentials.router, tags=["Credentials"])
 
 
 @api_router.get("/server/status", tags=["Server"], include_in_schema=False)

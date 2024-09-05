@@ -1,6 +1,9 @@
 # Linting stuff
 .ruff_cache
 
+# Databases
+app.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
