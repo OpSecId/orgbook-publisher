@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from config import settings
 from app.models import Credential, Presentation
 from app.utilities import freeze_ressource_digest
-from app.plugins import AgentController, AskarStorage
+from app.plugins import AgentController, AskarStorage#, IPSView
 from app.plugins.untp import DigitalConformityCredential
 import requests
 import uuid
@@ -118,6 +118,10 @@ class OrgbookPublisher:
         credential['type'].append(credential_registration['type'])
         
         if credential_registration['type'] == 'BCPetroleum&NaturalGasTitle':
+            # try:
+            #     title = IPSView().get_title_info(entity, claims['titleNumber'])
+            # except:
+            #     pass
             credential['credentialSubject']['issuedTo']['type'].append('titleHolder')
             credential['credentialSubject']['issuedTo']['interest'] = 100.000
             assessment = {
