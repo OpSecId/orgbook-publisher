@@ -1,103 +1,120 @@
-# from config import settings
-# import oracledb
+from config import settings
+import oracledb
 
-# DB_VIEWS = {
-#     # shows all the titles that are flagged as public
-#     "titles": "IPS_DIGITRUST_TITLE_VW",
-#     # shows the owners of the public titles
-#     "title_holders": "IPS_DIGITRUST_TITLE_CLIENT_OWNER_VW",
-#     # shows the caveats of the public titles and non-deleted caveats
-#     "caveats": "IPS_DIGITRUST_TITLE_CAVEAT_VW",
-#     # shows the title tract of the public titles and non-deleted tracts
-#     "tracts": "IPS_DIGITRUST_TITLE_TRACT_VW",
-#     # show the title tract description of the public titles and non deleted tracts
-#     "tracts_descriptions": "IPS_DIGITRUST_TITLE_TRACT_DESC_VW",
-#     # shows the title tract notes of the public titles and non deleted tracts
-#     "tracts_notes": "IPS_DIGITRUST_TITLE_TRACT_NOTE_VW",
-#     # shows the title tract right of the public titles and non deleted tracts
-#     "tracts_rights": "IPS_DIGITRUST_TITLE_TRACT_RIGHT_VW",
-#     #
-#     "wells": "IPS_DIGITRUST_TITLE_WELL_VW",
-#     #
-#     "wells_info": "IPS_DIGITRUST_TITLE_WELL_UWI_VW",
-# }
+DB_VIEWS = {
+    # shows all the titles that are flagged as public
+    "titles": "IPS_DIGITRUST_TITLE_VW",
+    # shows the owners of the public titles
+    "title_holders": "IPS_DIGITRUST_TITLE_CLIENT_OWNER_VW",
+    # shows the caveats of the public titles and non-deleted caveats
+    "caveats": "IPS_DIGITRUST_TITLE_CAVEAT_VW",
+    # shows the title tract of the public titles and non-deleted tracts
+    "tracts": "IPS_DIGITRUST_TITLE_TRACT_VW",
+    # show the title tract description of the public titles and non deleted tracts
+    "tracts_descriptions": "IPS_DIGITRUST_TITLE_TRACT_DESC_VW",
+    # shows the title tract notes of the public titles and non deleted tracts
+    "tracts_notes": "IPS_DIGITRUST_TITLE_TRACT_NOTE_VW",
+    # shows the title tract right of the public titles and non deleted tracts
+    "tracts_rights": "IPS_DIGITRUST_TITLE_TRACT_RIGHT_VW",
+    #
+    "wells": "IPS_DIGITRUST_TITLE_WELL_VW",
+    #
+    "wells_info": "IPS_DIGITRUST_TITLE_WELL_UWI_VW",
+}
 
-# class IPSView:
-#     def __init__(self):
-#         self.user = settings.IPS_DB_USERNAME
-#         self.password = settings.IPS_DB_PASSWORD
-#         self.host = settings.IPS_DB_HOSTNAME
-#         self.port = settings.IPS_DB_PORT
-#         self.db = settings.IPS_DB_NAME
-#         self.service = settings.IPS_DB_SERVICE_NAME
+class IPSView:
+    def __init__(self):
+        self.db = settings.IPS_DB
+        self.host = settings.IPS_HOST
+        self.port = settings.IPS_PORT
+        self.user = settings.IPS_USER
+        self.password = settings.IPS_PASS
+        self.service = settings.IPS_SVC
 
-#     async def get_title_info(self, entity, title_no):
-#         connection = oracledb.connect(
-#             user=self.user,
-#             password=self.password,
-#             host=self.host,
-#             port=self.port,
-#             service_name=self.service,
-#         )
-#         self.cursor = connection.cursor()
-#         title = await self.get_title(title_no)
-#         title["holder"] = await self.get_holder(title_no, entity['name'])
-#         title["caveats"] = await self.get_caveats(title_no)
-#         title["tracts"] = await self.get_tracts(title_no)
-#         title["wells"] = await self.get_wells(title_no)
+    async def get_title_info(self, entity, title_no):
+        connection = oracledb.connect(
+            user=self.user,
+            password=self.password,
+            host=self.host,
+            port=self.port,
+            service_name=self.service,
+        )
+        self.cursor = connection.cursor()
+        title = await self.get_title(title_no)
+        # title["holder"] = await self.get_holder(title_no, entity['name'])
+        # title["caveats"] = await self.get_caveats(title_no)
+        # title["tracts"] = await self.get_tracts(title_no)
+        # title["wells"] = await self.get_wells(title_no)
 
-#         return title
+        return title
 
-#     async def get_title(self, title_no):
-#         self.cursor.execute(
-#             f"select * from {DB_VIEWS['titles']} WHERE TITLE_NUMBER_ID='{title_no}'"
-#         )
-#         title_record = self.cursor.fetchall()[0]
-#         title_record = {
-#             "identifier": title_record[0],
-#             "titleStatusCode": title_record[1],
-#             "titleTypeCode": title_record[2],
-#             "originTypeCode": title_record[3],
-#             "originIdentifier": title_record[4],
-#             "issueDate": title_record[5].isoformat() + "Z" if title_record[5] else None,
-#             "term": title_record[6],
-#             "effectiveDate": (
-#                 title_record[7].isoformat() + "Z" if title_record[7] else None
-#             ),
-#             "areaInHectares": title_record[8],
-#             "paidToDate": (
-#                 title_record[9].isoformat() + "Z" if title_record[9] else None
-#             ),
-#             "expiryDate": (
-#                 title_record[10].isoformat() + "Z" if title_record[10] else None
-#             ),
-#             "cancellationDate": (
-#                 title_record[11].isoformat() + "Z" if title_record[11] else None
-#             ),
-#             "bonusPaid": title_record[12],
-#             "dollarPerHa": title_record[13],
-#             "feePaid": title_record[14],
-#             "rentPaid": title_record[15],
-#         }
-#         return title_record
+    async def get_title(self, title_no):
+        self.cursor.execute(
+            f"select * from {DB_VIEWS['titles']} WHERE TITLE_NUMBER_ID='{title_no}'"
+        )
+        title_record = self.cursor.fetchall()[0]
+        title_record = {
+            "identifier": title_record[0],
+            "titleStatusCode": title_record[1],
+            "titleTypeCode": title_record[2],
+            "originTypeCode": title_record[3],
+            "originIdentifier": title_record[4],
+            "issueDate": title_record[5].isoformat() + "Z" if title_record[5] else None,
+            "term": title_record[6],
+            "effectiveDate": (
+                title_record[7].isoformat() + "Z" if title_record[7] else None
+            ),
+            "areaInHectares": title_record[8],
+            "paidToDate": (
+                title_record[9].isoformat() + "Z" if title_record[9] else None
+            ),
+            "expiryDate": (
+                title_record[10].isoformat() + "Z" if title_record[10] else None
+            ),
+            "cancellationDate": (
+                title_record[11].isoformat() + "Z" if title_record[11] else None
+            ),
+            "bonusPaid": title_record[12],
+            "dollarPerHa": title_record[13],
+            "feePaid": title_record[14],
+            "rentPaid": title_record[15],
+        }
+        return title_record
 
-#     async def get_holder(self, title_no, holder_name):
+    async def get_holders(self):
+        connection = oracledb.connect(
+            user=self.user,
+            password=self.password,
+            host=self.host,
+            port=self.port,
+            service_name=self.service,
+        )
+        self.cursor = connection.cursor()
+        self.cursor.execute(
+            f"select * from {DB_VIEWS['title_holders']}"
+        )
+        records = self.cursor.fetchmany(size=10)
+        for record in records:
+            print(record[4])
+        
+        
+    async def get_holder(self, title_no, holder_name):
 
-#         self.cursor.execute(
-#             f"select * from {DB_VIEWS['title_holders']} WHERE TITLE_NUMBER_ID='{title_no}' AND POPULATED_NAME='{holder_name}'"
-#         )
-#         holder_record = self.cursor.fetchall()[0]
-#         holder = {
-#             "identifier": holder_record[1],
-#             "clientSupcd": holder_record[2],
-#             "clientStatusInd": holder_record[3],
-#             "populatedName": holder_record[4],
-#             "percentageOwnership": holder_record[5],
-#             "transferRecordedDate": (
-#                 holder_record[6].isoformat() + "Z" if holder_record[6] else None
-#             ),
-#         }
-#         return holder
+        self.cursor.execute(
+            f"select * from {DB_VIEWS['title_holders']} WHERE TITLE_NUMBER_ID='{title_no}' AND POPULATED_NAME='{holder_name}'"
+        )
+        holder_record = self.cursor.fetchall()[0]
+        holder = {
+            "identifier": holder_record[1],
+            "clientSupcd": holder_record[2],
+            "clientStatusInd": holder_record[3],
+            "populatedName": holder_record[4],
+            "percentageOwnership": holder_record[5],
+            "transferRecordedDate": (
+                holder_record[6].isoformat() + "Z" if holder_record[6] else None
+            ),
+        }
+        return holder
 
 #     async def get_caveats(self, title_no):
 #         caveats = []

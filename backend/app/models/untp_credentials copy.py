@@ -4,7 +4,7 @@ from .credential import Credential
 
 DCC_CONTEXT = ''
 
-class Party(BaseModel):
+class Entity(BaseModel):
     id: str = Field()
     name: str = Field()
 
@@ -20,7 +20,7 @@ class Assessment(BaseModel):
 
 class ConformityAttestation(BaseModel):
     type: list = Field(['ConformityAttestation'])
-    issuedTo: Party = Field()
+    issuedToParty: Party = Field()
     assessments: List[Assessment] = Field()
 
 class DigitalConformityCredential(Credential):

@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.post("/credentials/register", summary="Register new credential.")
 async def register_credential(request_body: RegisterCredential):
-    credential_registration = request_body.model_dump(by_alias=True, exclude_none=True)['credentialRegistration']
+    credential_registration = request_body.model_dump()['credentialRegistration']
     try:
         await AskarStorage().store('credentialRegistration', credential_registration['type'], credential_registration)
     except:
@@ -24,9 +24,9 @@ async def register_credential(request_body: RegisterCredential):
 
 @router.post("/credentials/publish", summary="Publish Credential.")
 async def publish_credential(request_body: PublishCredential):
-    credential_registration = await AskarStorage().fetch('credentialRegistration', vars(request_body)['credentialType'])
+    credential_registration = await AskarStorage().fetch('credentialRegistration', request_body.model_dump()['credentialType'])
     published_credential = await OrgbookPublisher().publish_credential(
-        claims=vars(request_body)['credentialClaims'],
+        claims=request_body.model_dump()['credentialClaims'],
         credential_registration=credential_registration
     )
     return JSONResponse(
