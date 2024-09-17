@@ -7,6 +7,7 @@ from app.plugins.untp import DigitalConformityCredential
 from .ips import IPSView
 import requests
 import uuid
+from datetime import datetime
 
 class OrgbookPublisher:
     
@@ -22,6 +23,7 @@ class OrgbookPublisher:
         credential_type = {
             "format": "vc_di",
             "type": credential_registration['type'],
+            "issuer": credential_registration['verificationMethod'].split('#')[-1],
             "version": credential_registration['version'],
             "verificationMethods": [credential_registration['verificationMethod']],
             "ocaBundle": {},
@@ -44,30 +46,56 @@ class OrgbookPublisher:
                 },
             ]
         }
-        return credential_type
-        proof_options = AgentController().issuer_proof_options(credential_registration['verificationMethod'])
-        secured_credential_type = AgentController().sign_document(credential_type, proof_options)
+        fake_proof = {
+            'type': 'DataIntegrityProof',
+            'cryptosuite': 'eddsa-jcs-2022',
+            'proofPurpose': 'authentication',
+            'verificationMethod': credential_registration['verificationMethod'],
+            'proofValue': '',
+        }
+        credential_type['proof'] = [fake_proof]
+        options = {'issuerId': credential_registration['verificationMethod'].split('#')[-1]}
+        # return credential_type
+        # proof_options = AgentController().issuer_proof_options(credential_registration['verificationMethod'])
+        # secured_credential_type = AgentController().sign_document(credential_type, proof_options)
+        request_body = {'credentialType': credential_type, 'options': options}
         
-        # r = requests.post(f'{self.vc_service}/credential-types', json={'securedDocument': secured_credential_type})
-        return secured_credential_type
+        r = requests.post(f'{self.vc_service}/credential-types', json={'securedDocument': credential_type, 'options': options})
+        try:
+            return r.json()
+        except:
+            raise HTTPException(status_code=400, detail="Couldn't register credential type.")
+            
         
     async def publish_credential(self, claims, credential_registration):
         credential = await self._format_credential(claims, credential_registration)
-        return credential
-        endorsed_vp = await self._secure_credential(
+        vp = await self._secure_credential(
             credential,
             credential_registration['verificationMethod']
         )
+        credential['proof'] = [{
+            'type': 'DataIntegrityProof',
+            'cryptosuite': 'eddsa-jcs-2022',
+            'proofPurpose': 'assertionMethod',
+            'verificationMethod': credential_registration['verificationMethod'],
+            'proofValue': '',
+        }]
         payload = {
-            'verifiablePresentation': endorsed_vp,
+            'securedDocument': credential,
             'options': {
-                'issuerId': credential_registration['verificationMethod'].split('#')[0],
+                'format': 'vc_di',
+                'type': credential_registration['type'],
                 'credentialId': credential['id'],
                 'credentialType': credential_registration['type'],
-                'credentialVersion': credential_registration['version'],
+                'version': credential_registration['version'],
             }
         }
-        return payload
+        
+        r = requests.post(f'{self.vc_service}/credentials', json=payload)
+        try:
+            return r.json()
+        except:
+            raise HTTPException(status_code=400, detail="Couldn't register credential type.")
         
         # r = requests.post(f'{self.microservice}/credentials', json={
         #     'verifiablePresentation': secured_document,
@@ -85,13 +113,15 @@ class OrgbookPublisher:
         
     async def _format_credential(self, claims, credential_registration):
         entity = await self._find_entity(claims['registrationNumber'])
-        # issuer = await self._find_issuer(credential_registration['verificationMethod'].split('#')[0])
+        issuer = await self._find_issuer(credential_registration['verificationMethod'].split('#')[0])
         credential = Credential(
-            id=f'{self.vc_service}/entity/{entity["registrationNumber"]}/credentials/{str(uuid.uuid4())}',
-            # issuer=issuer,
+            id=f'{self.vc_service}/credentials/{str(uuid.uuid4())}',
+            issuer=issuer,
             name=credential_registration['name'],
             description=credential_registration['description'],
         ).model_dump()
+        credential['validFrom'] = str(datetime.now().isoformat('T', 'seconds'))
+        credential['validUntil'] = str(datetime.now().isoformat('T', 'seconds'))
         credential['credentialSubject'] = {}
         # credential['credentialSchema'] = {
         #         'type': 'JsonSchema',
@@ -122,7 +152,7 @@ class OrgbookPublisher:
         
         if credential_registration['type'] == 'BCPetroleum&NaturalGasTitle':
             # IPSView().get_holders(entity, claims['titleNumber'])
-            await IPSView().get_holders()
+            # await IPSView().get_holders()
             pass
             # try:
             #     title = IPSView().get_title_info(entity, claims['titleNumber'])
@@ -145,17 +175,34 @@ class OrgbookPublisher:
         
     async def _secure_credential(self, credential, verification_method):
         
-        options = AgentController().issuer_proof_options(verification_method)
-        vc = AgentController().sign_document(credential, options)
+        # options = AgentController().issuer_proof_options(verification_method)
+        # vc = AgentController().sign_document(credential, options)
+        credential['proof'] = [{
+            'type': 'DataIntegrityProof',
+            'cryptosuite': 'eddsa-jcs-2022',
+            'proofPurpose': 'assertionMethod',
+            'verificationMethod': verification_method,
+            'proofValue': '',
+        }]
+        vc = credential
         
         presentation = Presentation(
             verifiableCredential= [vc]
         ).model_dump(by_alias=True, exclude_none=True)
-        vp = AgentController().sign_document(presentation, options)
+        # vp = AgentController().sign_document(presentation, options)
+        presentation['proof'] = [{
+            'type': 'DataIntegrityProof',
+            'cryptosuite': 'eddsa-jcs-2022',
+            'proofPurpose': 'authentication',
+            'verificationMethod': verification_method,
+            'proofValue': '',
+        }]
+        vp = presentation
         
-        options = AgentController().endorser_proof_options()
-        endorsed_vp = AgentController().sign_document(vp, options)
-        return endorsed_vp
+        # options = AgentController().endorser_proof_options()
+        # endorsed_vp = AgentController().sign_document(vp, options)
+        # print(vp)
+        return vp
         
     async def _find_entity(self, entity_id):
         r = requests.get(f'{self.api}/search/topic?q={entity_id}&inactive=false')

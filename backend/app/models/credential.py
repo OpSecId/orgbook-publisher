@@ -11,7 +11,7 @@ class Credential(BaseModel):
     context: List[str] = Field(['https://www.w3.org/ns/credentials/v2'], alias='@context')
     type: List[str] = Field(['VerifiableCredential'])
     id: str = Field()
-    # issuer: Issuer = Field()
+    issuer: Issuer = Field()
     name: str = Field(None)
     description: str = Field(None)
     credentialSubject: Union[dict, List[dict]] = Field(None)

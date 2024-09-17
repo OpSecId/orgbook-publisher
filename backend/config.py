@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     
     ORGBOOK_URL: str = os.environ["ORGBOOK_URL"]
     ORGBOOK_API_URL: str = f'{ORGBOOK_URL}/api/v4'
-    ORGBOOK_VC_SERVICE: str = os.environ["ORGBOOK_VC_SERVICE"]
+    ORGBOOK_VC_SERVICE: str = f'{ORGBOOK_URL}/api/entities'
     
     IPS_DB: str = os.environ["IPS_DB"]
     IPS_HOST: str = os.environ["IPS_HOST"]

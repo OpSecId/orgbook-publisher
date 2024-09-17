@@ -19,7 +19,7 @@ class RegisterCredential(BaseModel):
 class PublishCredential(BaseModel):
     credentialType: str = Field(example='BCPetroleum&NaturalGasTitle')
     credentialClaims: dict = Field(example={
-        "registrationNumber": "A0131571",
+        "registrationNumber": "BC0028724",
         "titleNumber": "745"
     })
     
