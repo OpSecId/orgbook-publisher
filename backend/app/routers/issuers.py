@@ -18,13 +18,17 @@ async def get_issuers():
 async def register_issuer(
     request_body: RegisterIssuer
 ):
-    did_doc = DidWebEndorser().did_registration(
-        namespace=vars(request_body)['namespace'] if vars(request_body)['namespace'] else 'issuer', 
-        identifier=vars(request_body)['identifier']
-    )
+    # did_doc = DidWebEndorser().did_registration(
+    #     namespace=vars(request_body)['namespace'] if vars(request_body)['namespace'] else 'issuer', 
+    #     identifier=vars(request_body)['identifier']
+    # )
+    identifier = vars(request_body)['identifier']
+    namespace = vars(request_body)['namespace']
+    did = f'did:web:{settings.DOMAIN}:{identifier}:{namespace}'
+    did = f'did:web:digitaltrust.traceability.site:petroleum-and-natural-gas-act:director-of-petroleum-lands'
     await AskarStorage().add_issuer(
-        did=did_doc['id'],
+        did=did,
         name=vars(request_body)['name'],
         description=vars(request_body)['description'],
     )
-    return JSONResponse(status_code=201, content=did_doc)
+    return JSONResponse(status_code=201, content={'status': 'ok'})

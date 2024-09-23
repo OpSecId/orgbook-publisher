@@ -5,8 +5,8 @@ import requests
 
 class DidWebEndorser:
     def __init__(self):
-        self.did = settings.ENDORSER_DID
-        self.server = settings.DID_WEB_SERVER_URL
+        self.did = settings.TDW_ENDORSER_DID
+        self.server = settings.TDW_SERVER_URL
         
     def request_did(self, namespace, identifier):
         r = requests.get(f'{self.server}/{namespace}/{identifier}')
@@ -24,7 +24,7 @@ class DidWebEndorser:
         except:
             raise HTTPException(status_code=r.status_code, detail="Couldn't register did.")
         
-    def did_registration(self, namespace, identifier):
+    def did_registration(self, namespace, identifier, url=None):
         did_request = self.request_did(namespace, identifier)
         did_doc = did_request['document']
         
@@ -33,6 +33,12 @@ class DidWebEndorser:
         did_doc['authentication'] = [verification_method['id']]
         did_doc['assertionMethod'] = [verification_method['id']]
         did_doc['verificationMethod'] = [verification_method]
+        if url:
+            did_doc['service'] = [{
+                'id': did_doc['id']+'#ministry',
+                'type': 'LinkedDomain',
+                'serviceEndpoint': url,
+            }]
         
         proof_options = did_request['options']
         proof_options['verificationMethod'] = verification_method['id']
