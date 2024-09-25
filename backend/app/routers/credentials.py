@@ -17,8 +17,6 @@ router = APIRouter()
 @router.post("/credentials/register")
 async def register_credential(request_body: RegisterCredential):
     credential_registration = request_body.model_dump()['credentialRegistration']
-    # TODO remove me
-    credential_registration['issuer'] = settings.ISSUERS[0]['id']
     try:
         await AskarStorage().store('credentialRegistration', credential_registration['type'], credential_registration)
     except:
