@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from config import settings
-from app.models import Credential, Presentation
+from app.models import Credential
 from app.utilities import freeze_ressource_digest
-from app.plugins import AgentController, AskarStorage
+from app.plugins import AgentController, AskarStorage, AskarWallet
 from app.plugins.untp import DigitalConformityCredential
-from .ips import IPSView
+# from .ips import IPSView
 import requests
 import uuid
 from datetime import datetime
@@ -20,12 +20,14 @@ class OrgbookPublisher:
         pass
         
     async def create_credential_type(self, credential_registration):
+        # TODO, find another way to get verificationMethod
+        verification_method = credential_registration['issuer']+"#multikey-01"
         credential_type = {
             "format": "vc_di",
             "type": credential_registration['type'],
-            "issuer": credential_registration['verificationMethod'].split('#')[-1],
+            "issuer": credential_registration['issuer'],
             "version": credential_registration['version'],
-            "verificationMethods": [credential_registration['verificationMethod']],
+            "verificationMethods": [verification_method],
             "ocaBundle": {},
             "topic": {
                 "type": "registration.registries.ca",
@@ -46,21 +48,18 @@ class OrgbookPublisher:
                 },
             ]
         }
-        fake_proof = {
+        proof_options = {
             'type': 'DataIntegrityProof',
             'cryptosuite': 'eddsa-jcs-2022',
-            'proofPurpose': 'authentication',
-            'verificationMethod': credential_registration['verificationMethod'],
-            'proofValue': '',
+            'proofPurpose': 'assertionMethod',
+            'verificationMethod': verification_method,
         }
-        credential_type['proof'] = [fake_proof]
-        options = {'issuerId': credential_registration['verificationMethod'].split('#')[-1]}
-        # return credential_type
-        # proof_options = AgentController().issuer_proof_options(credential_registration['verificationMethod'])
-        # secured_credential_type = AgentController().sign_document(credential_type, proof_options)
-        request_body = {'credentialType': credential_type, 'options': options}
+        signed_vc_type = await AskarWallet().add_proof(credential_type, proof_options)
+        options = {'issuerId': credential_registration['issuer']}
+        # request_body = {'securedDocument': signed_vc_type, 'options': options}
+        return signed_vc_type
         
-        r = requests.post(f'{self.vc_service}/credential-types', json={'securedDocument': credential_type, 'options': options})
+        r = requests.post(f'{self.vc_service}/credential-types', json=request_body)
         try:
             return r.json()
         except:
@@ -186,9 +185,7 @@ class OrgbookPublisher:
         }]
         vc = credential
         
-        presentation = Presentation(
-            verifiableCredential= [vc]
-        ).model_dump(by_alias=True, exclude_none=True)
+        presentation = {}
         # vp = AgentController().sign_document(presentation, options)
         presentation['proof'] = [{
             'type': 'DataIntegrityProof',

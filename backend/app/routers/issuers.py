@@ -1,34 +1,106 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
-from app.models.web_requests import RegisterIssuer
+from app.models.web_schemas import RegisterIssuer
 from config import settings
-from app.plugins import AskarStorage, DidWebEndorser
+from app.plugins import AskarStorage, DidWebEndorser, AskarWallet
+from app.models import DidDocument, VerificationMethod, Service
 
 router = APIRouter()
-
-@router.get("/issuers", summary="Request issuers list.")
-async def get_issuers():
-    issuer_registrations = await AskarStorage().fetch('registration', 'issuers')
-    return JSONResponse(
-        status_code=200,
-        content=issuer_registrations,
-    )
 
 @router.post("/issuers", summary="Register issuer.")
 async def register_issuer(
     request_body: RegisterIssuer
 ):
-    # did_doc = DidWebEndorser().did_registration(
-    #     namespace=vars(request_body)['namespace'] if vars(request_body)['namespace'] else 'issuer', 
-    #     identifier=vars(request_body)['identifier']
-    # )
-    identifier = vars(request_body)['identifier']
     namespace = vars(request_body)['namespace']
-    did = f'did:web:{settings.DOMAIN}:{identifier}:{namespace}'
-    did = f'did:web:digitaltrust.traceability.site:petroleum-and-natural-gas-act:director-of-petroleum-lands'
-    await AskarStorage().add_issuer(
-        did=did,
-        name=vars(request_body)['name'],
-        description=vars(request_body)['description'],
+    identifier = vars(request_body)['identifier']
+    name = vars(request_body)['name']
+    description = vars(request_body)['description']
+    did = f'did:web:{settings.DOMAIN}:{namespace}:{identifier}'
+    # did_document = await DidWebEndorser().did_registration(namespace, identifier)
+    did_document = DidDocument(
+        id=did,
+        name=name,
+        description=description
+    ).model_dump()
+    await AskarStorage().store('didRegistration', did_document['id'], did_document)
+    return JSONResponse(status_code=201, content=did_document)
+
+@router.get("/issuers")
+async def get_pending_issuer_registrations(did: str):
+    if did:
+        registrations = [
+            await AskarStorage().fetch('didRegistration', did)
+        ]
+    else:
+        did_registrations = []
+        registrations = [
+            await AskarStorage().fetch('didRegistration', did) 
+            for did in did_registrations
+        ]
+    return JSONResponse(
+        status_code=200,
+        content={'registrations': registrations},
     )
-    return JSONResponse(status_code=201, content={'status': 'ok'})
+
+@router.post("/issuers/{did}")
+async def approve_pending_issuer_registration(did: str):
+    did_document = await AskarStorage().fetch('didRegistration', did)
+    await AskarStorage().store('didDocument', did, did_document)
+    # await AskarStorage().remove('didRegistration', did)
+    return JSONResponse(
+        status_code=200,
+        content=did_document,
+    )
+
+@router.delete("/issuers/{did}")
+async def cancel_pending_issuer_registration(did: str):
+    # await AskarStorage().remove('didRegistration', did)
+    return JSONResponse(
+        status_code=200,
+        content={},
+    )
+
+
+@router.get("/{namespace}/{identifier}/did.json")
+async def get_issuer_did_document(namespace: str, identifier: str):
+    headers = {"Content-Type": "application/ld+json"}
+    did = f'did:web:{settings.DOMAIN}:{namespace}:{identifier}'
+    issuer = next((issuer for issuer in settings.ISSUERS if issuer['id'] == did), None)
+    # did_document = await AskarStorage().fetch('didDocument', did)
+    multikey = await AskarWallet().get_multikey(did)
+    jwk = multikey
+    did_document = DidDocument(
+        id=did,
+        name=issuer['name'],
+        description=issuer['description'],
+        authentication=[f'{did}#multikey-01'],
+        assertionMethod=[f'{did}#multikey-01'],
+        verificationMethod=[
+            VerificationMethod(
+                type='Multikey',
+                id=f'{did}#multikey-01',
+                controller=did,
+                publicKeyMultibase=multikey,
+            ),
+            VerificationMethod(
+                type='JsonWebKey',
+                id=f'{did}#jwk-01',
+                controller=did,
+                publicKeyJwk={
+                    "kty": "OKP",
+                    "crv": "Ed25519",
+                    "x": AskarWallet().multikey_to_jwk(multikey)
+                },
+            ),
+        ],
+        service=[Service(
+            id=f'{did}#bcgov-url',
+            type='LinkedDomains',
+            serviceEndpoint=issuer['url'],
+        )]
+    ).model_dump()
+    return JSONResponse(
+        status_code=200,
+        content=did_document,
+        headers=headers
+    )
