@@ -1,0 +1,69 @@
+[
+    {
+      "capture_base": {
+        "attributes": {
+          "title_no": "Numeric",
+          "title_type": "Text"
+        },
+        "classification": "",
+        "digest": "",
+        "flagged_attributes": [],
+        "type": "spec/capture_base/1.0"
+      },
+      "overlays": [
+        {
+          "attribute_mapping": {
+            "title_no": "$.credentialSubject.titleNo",
+            "title_type": "$.credentialSubject.titleType"
+          },
+          "capture_base": "",
+          "digest": "",
+          "type": "spec/overlays/mapping/1.0"
+        },
+        {
+          "attribute_character_encoding": {
+            "title_no": "utf-8",
+            "title_type": "utf-8"
+          },
+          "capture_base": "",
+          "default_character_encoding": "utf-8",
+          "digest": "",
+          "type": "spec/overlays/character_encoding/1.0"
+        },
+        {
+          "attribute_categories": [],
+          "attribute_labels": {
+            "title_no": "Title Number",
+            "title_type": "Title Type"
+          },
+          "capture_base": "",
+          "category_labels": {},
+          "digest": "",
+          "language": "en",
+          "type": "spec/overlays/label/1.0"
+        },
+        {
+          "capture_base": "",
+          "description": "",
+          "digest": "",
+          "issuer": "",
+          "language": "en",
+          "name": "",
+          "type": "spec/overlays/meta/1.0"
+        },
+        {
+          "logo": "",
+          "background_image_slice": "",
+          "background_image": "",
+          "primary_background_color": "#003366",
+          "secondary_background_color": "#00264D",
+          "capture_base": "",
+          "digest": "",
+          "expiry_date_attribute": "",
+          "primary_attribute": "title_no",
+          "secondary_attribute": "title_type",
+          "type": "aries/overlays/branding/1.0"
+        }
+      ]
+    }
+  ]

@@ -1,5 +1,9 @@
 import app.models.untp as untp
 
+UNTP_CONTEXTS = {
+    'DigitalConformityCredential': 'https://test.uncefact.org/vocabulary/untp/dcc/0/untp-dcc-context-0.3.10.jsonld'
+}
+
 class DigitalConformityCredential:
     
     def __init__(self):

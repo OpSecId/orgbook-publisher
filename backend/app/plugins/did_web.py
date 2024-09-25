@@ -1,6 +1,8 @@
 from fastapi import HTTPException
 from config import settings
 from app.plugins.agent import AgentController
+from app.plugins import AskarWallet
+from app.models import DidDocument, VerificationMethod, Service
 import requests
 
 class DidWebEndorser:
@@ -8,43 +10,57 @@ class DidWebEndorser:
         self.did = settings.TDW_ENDORSER_DID
         self.server = settings.TDW_SERVER_URL
         
+    async def did_registration(self, namespace, identifier, url=None):
+        did_request = self.request_did(
+            namespace=namespace,
+            identifier=identifier,
+        )
+        did_document = did_request['didDocument']
+        did = did_document['id']
+        multikey = await AskarWallet().create_key(f'{did}#key-01')
+        # multikey = AgentController().create_key_pair(kid=f'{did}#key-01')
+        did_document = DidDocument(
+            id=did,
+            authentication=[f'{did}#key-01'],
+            assertionMethod=[f'{did}#key-01'],
+            verificationMethod=[VerificationMethod(
+                id=f'{did}#key-01',
+                controller=did,
+                publicKeyMultibase=multikey
+            )]
+        ).model_dump()
+        # if url:
+        #     did_doc['service'] = [{
+        #         'id': did_doc['id']+'#ministry',
+        #         'type': 'LinkedDomain',
+        #         'serviceEndpoint': url,
+        #     }]
+        
+        issuer_options = did_request['proofOptions'].copy()
+        issuer_options['verificationMethod'] = f'{did}#key-01'
+        signed_did_doc = await AskarWallet().add_proof(did_document, issuer_options)
+        # signed_did_doc = AgentController().sign_document(did_doc, proof_options)
+        endorser_options = did_request['proofOptions'].copy()
+        endorsed_did_doc = await AskarWallet().add_proof(signed_did_doc, endorser_options)
+        # endorsed_did_doc = AgentController().endorse_document(signed_did_doc, proof_options)
+        
+        did_registration = self.register_did(endorsed_did_doc)
+        # print(did_registration)
+        # return did_registration
+        return endorsed_did_doc
+        
     def request_did(self, namespace, identifier):
-        r = requests.get(f'{self.server}/{namespace}/{identifier}')
+        r = requests.get(f'{self.server}?namespace={namespace}&identifier={identifier}')
         try:
             return r.json()
         except:
             raise HTTPException(status_code=r.status_code, detail="Couldn't request did.")
         
-    def register_did(self, namespace, identifier, endorsed_did_doc):
-        r = requests.post(f'{self.server}/{namespace}/{identifier}', json={
+    def register_did(self, endorsed_did_doc):
+        r = requests.post(f'{self.server}', json={
             'didDocument': endorsed_did_doc
         })
         try:
             return r.json()['didDocument']
         except:
             raise HTTPException(status_code=r.status_code, detail="Couldn't register did.")
-        
-    def did_registration(self, namespace, identifier, url=None):
-        did_request = self.request_did(namespace, identifier)
-        did_doc = did_request['document']
-        
-        verification_method = AgentController().register_did(did_doc['id'])
-        did_doc['@context'].append('https://w3id.org/security/multikey/v1')
-        did_doc['authentication'] = [verification_method['id']]
-        did_doc['assertionMethod'] = [verification_method['id']]
-        did_doc['verificationMethod'] = [verification_method]
-        if url:
-            did_doc['service'] = [{
-                'id': did_doc['id']+'#ministry',
-                'type': 'LinkedDomain',
-                'serviceEndpoint': url,
-            }]
-        
-        proof_options = did_request['options']
-        proof_options['verificationMethod'] = verification_method['id']
-        
-        signed_did_doc = AgentController().sign_document(did_doc, proof_options)
-        endorsed_did_doc = AgentController().endorse_document(signed_did_doc, proof_options)
-        
-        did_registration = self.register_did(namespace, identifier, endorsed_did_doc)
-        return did_registration

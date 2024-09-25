@@ -11,6 +11,16 @@ class AgentController:
         self.endorser = settings.ENDORSER_DID
         self.endorser_vm = settings.ENDORSER_VM
         
+    def create_key_pair(self, kid, seed=None):
+        r = requests.post(f'{self.endpoint}/wallet/keys', headers=self.headers, json={
+            "kid": kid,
+            "key_type": "ed25519",
+        })
+        try:
+            return r.json()["multikey"]
+        except:
+            raise HTTPException(status_code=r.status_code, detail="Couldn't create did.")
+        
     def register_did(self, did, seed=None):
         # TODO remove this section once seed is optional in acapy
         if not seed:
