@@ -55,6 +55,7 @@ class AskarWallet:
         multikey = self._to_multikey(key.get_public_bytes())
         if not kid:
             kid=f'did:key:{multikey}'
+        print(kid)
         try:
             async with store.session() as session:
                 await session.insert(
