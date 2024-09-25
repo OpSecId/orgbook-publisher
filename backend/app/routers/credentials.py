@@ -71,7 +71,8 @@ async def issue_credential(request_body: IssueCredential):
     proof_options = {
         'type': 'DataIntegrityProof',
         'cryptosuite': 'eddsa-jcs-2022',
-        'proofPurpose': 'assertionMethod',
+        'proofPurpose': 'authentication',
+        # 'proofPurpose': 'assertionMethod',
         'verificationMethod': verification_method,
         'created': str(datetime.now().isoformat('T', 'seconds'))
     }

@@ -51,7 +51,8 @@ class OrgbookPublisher:
         proof_options = {
             'type': 'DataIntegrityProof',
             'cryptosuite': 'eddsa-jcs-2022',
-            'proofPurpose': 'assertionMethod',
+            'proofPurpose': 'authentication',
+            # 'proofPurpose': 'assertionMethod',
             'verificationMethod': verification_method,
         }
         signed_vc_type = await AskarWallet().add_proof(credential_type, proof_options)
