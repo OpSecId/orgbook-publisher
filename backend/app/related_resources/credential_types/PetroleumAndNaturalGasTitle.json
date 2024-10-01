@@ -2,19 +2,21 @@
     "type": "BCPetroleumAndNaturalGasTitleCredential",
     "untpType": "DigitalConformityCredential",
     "version": "v1",
-    "name": "B.C. Petroleum & Natural Gas Title",
-    "description": "The majority of subsurface petroleum and natural gas (PNG) resources in British Columbia (B.C.) are owned by the Province. By entering into a tenure agreement with the Province, private industry can develop these resources. Tenure agreements are the mechanism used by the Province to give rights to petroleum and natural gas resources through issuance of Petroleum and Natural Gas Titles.",
     "issuer": "did:web:test.digitaltrust.traceability.site:petroleum-and-natural-gas-act:director-of-petroleum-lands",
-    "mappings": {
-      "entityId": "$.credentialSubject.issuedToParty.registeredId",
-      "entityName": "$.credentialSubject.issuedToParty.name",
-      "interest": "$.credentialSubject.issuedToParty.interest",
-      "titleType": "$.credentialSubject.titleType",
-      "titleNumber": "$.credentialSubject.titleNumber"
-    },
-    "ressources": {
-      "context": "https://test.digitaltrust.traceability.site/contexts/PetroleumAndNaturalGasTitle/v1",
-      "vocabulary": "https://bcgov.github.io/digital-trust-toolkit/docs/governance/pilots/bc-petroleum-and-natural-gas-title/vocabulary",
-      "governance": "https://bcgov.github.io/digital-trust-toolkit/docs/governance/pilots/bc-petroleum-and-natural-gas-title"
+    "context": "https://bcgov.github.io/digital-trust-toolkit/contexts/BCPetroleumAndNaturalGasTitle/v1.jsonld",
+    "ocaBundle": "https://bcgov.github.io/digital-trust-toolkit/oca-bundles/BCPetroleumAndNaturalGasTitle/v1.jsonld",
+    "relatedResources": {
+      "document": {
+        "id": "https://www.bc-er.ca/files/application-manuals/Oil-and-Gas-Activity-Application-Manual/Supporting-Documents/uniquewellidentifierformat.pdf",
+        "name": "Unique Well Identifier Format"
+      },
+      "governance": {
+        "id": "https://bcgov.github.io/digital-trust-toolkit/docs/governance/pilots/bc-petroleum-and-natural-gas-title",
+        "name": "B.C. Petroleum & Natural Gas Title"
+      },
+      "legalAct": {
+        "id": "https://www.bclaws.gov.bc.ca/civix/document/id/complete/statreg/00_96361_01",
+        "name": "Petroleum and Natural Gas Act"
+      }
     }
 }

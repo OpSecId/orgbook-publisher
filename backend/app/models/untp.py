@@ -3,10 +3,11 @@ from enum import Enum
 from pydantic import BaseModel, Field, AnyUrl
 # from .codes import EncryptionMethod, HashMethod
 
+
 class BaseModel(BaseModel):
-    
     def model_dump(self, **kwargs) -> Dict[str, Any]:
         return super().model_dump(by_alias=True, exclude_none=True, **kwargs)
+
 
 class IdentifierScheme(BaseModel):
     # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#identifierscheme
@@ -32,7 +33,7 @@ class BinaryFile(BaseModel):
 
     fileName: str
     fileType: str  # https://mimetype.io/all-types
-    file: str  #Base64
+    file: str  # Base64
 
 
 class Link(BaseModel):
@@ -62,7 +63,8 @@ class Measure(BaseModel):
 
     value: float
     unit: str = Field(
-        max_length="3")  # from https://vocabulary.uncefact.org/UnitMeasureCode
+        max_length="3"
+    )  # from https://vocabulary.uncefact.org/UnitMeasureCode
 
 
 class Endorsement(BaseModel):
@@ -74,7 +76,7 @@ class Endorsement(BaseModel):
     trustmark: Optional[BinaryFile] = None
     issuingAuthority: Entity
     accreditationCertification: Optional[Link] = None
-    
+
 
 class Standard(BaseModel):
     # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#standard
@@ -83,7 +85,7 @@ class Standard(BaseModel):
     id: AnyUrl
     name: str
     issuingParty: Entity
-    issueDate: str  #iso8601 datetime string
+    issueDate: str  # iso8601 datetime string
 
 
 class Regulation(BaseModel):
@@ -92,9 +94,11 @@ class Regulation(BaseModel):
 
     id: AnyUrl
     name: str
-    jurisdictionCountry: str  #countryCode from https://vocabulary.uncefact.org/CountryId
+    jurisdictionCountry: (
+        str  # countryCode from https://vocabulary.uncefact.org/CountryId
+    )
     administeredBy: Entity
-    effectiveDate: str  #iso8601 datetime string
+    effectiveDate: str  # iso8601 datetime string
 
 
 class Metric(BaseModel):
@@ -143,9 +147,9 @@ class ConformityAssessment(BaseModel):
     type: str = "ConformityAssessment"
 
     id: AnyUrl
-    referenceStandard: Optional[Standard] = None  #defines the specification
-    referenceRegulation: Optional[Regulation] = None  #defines the regulation
-    assessmentCriterion: Optional[Criterion] = None  #defines the criteria
+    referenceStandard: Optional[Standard] = None  # defines the specification
+    referenceRegulation: Optional[Regulation] = None  # defines the regulation
+    assessmentCriterion: Optional[Criterion] = None  # defines the criteria
     declaredValues: Optional[List[Metric]] = None
     compliance: Optional[bool] = False
     # conformityTopic: ConformityTopicCode
@@ -161,7 +165,7 @@ class ConformityAssessmentScheme(BaseModel):
     id: str
     name: str
     issuingParty: Optional[Entity] = None
-    issueDate: Optional[str] = None  #ISO8601 datetime string
+    issueDate: Optional[str] = None  # ISO8601 datetime string
     trustmark: Optional[BinaryFile] = None
 
 
@@ -172,14 +176,14 @@ class ConformityAttestation(BaseModel):
     # assessorLevel: Optional[AssessorLevelCode] = None
     # assessmentLevel: AssessmentLevelCode
     # attestationType: AttestationType
-    attestationDescription: Optional[str] = None  #missing from context file
+    attestationDescription: Optional[str] = None  # missing from context file
     issuedToParty: Entity
     authorisations: Optional[Endorsement] = None
     conformityCertificate: Optional[SecureLink] = None
     auditableEvidence: Optional[SecureLink] = None
     # scope: ConformityAssessmentScheme
     assessments: List[ConformityAssessment] = None
-    
+
 
 class AssessorLevelCode(str, Enum):
     # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#assessorLevelCode
@@ -192,7 +196,7 @@ class AssessorLevelCode(str, Enum):
 
 
 class AssessmentLevelCode(str, Enum):
-    #https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#assessmentlevelcode
+    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#assessmentlevelcode
     GovtApproval = "GovtApproval"
     GlobalMLA = "GlobalMLA"
     Accredited = "Accredited"

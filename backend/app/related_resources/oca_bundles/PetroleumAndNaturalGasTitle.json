@@ -2,8 +2,11 @@
     {
       "capture_base": {
         "attributes": {
-          "title_no": "Numeric",
-          "title_type": "Text"
+          "entityId": "Text",
+          "entityName": "Text",
+          "interest": "Numeric",
+          "titleType": "Text",
+          "titleNumber": "Numeric"
         },
         "classification": "",
         "digest": "",
@@ -13,18 +16,18 @@
       "overlays": [
         {
           "attribute_mapping": {
-            "title_no": "$.credentialSubject.titleNo",
-            "title_type": "$.credentialSubject.titleType"
+            "entityId": "$.credentialSubject.issuedToParty.registeredId",
+            "entityName": "$.credentialSubject.issuedToParty.name",
+            "interest": "$.credentialSubject.issuedToParty.interest",
+            "titleType": "$.credentialSubject.titleType",
+            "titleNumber": "$.credentialSubject.titleNumber"
           },
           "capture_base": "",
           "digest": "",
           "type": "spec/overlays/mapping/1.0"
         },
         {
-          "attribute_character_encoding": {
-            "title_no": "utf-8",
-            "title_type": "utf-8"
-          },
+          "attribute_character_encoding": {},
           "capture_base": "",
           "default_character_encoding": "utf-8",
           "digest": "",
@@ -33,8 +36,11 @@
         {
           "attribute_categories": [],
           "attribute_labels": {
-            "title_no": "Title Number",
-            "title_type": "Title Type"
+            "entityId": "Entity Id",
+            "entityName": "Entity Name",
+            "interest": "Interest",
+            "titleType": "Title Type",
+            "titleNumber": "Title Number"
           },
           "capture_base": "",
           "category_labels": {},
@@ -44,11 +50,11 @@
         },
         {
           "capture_base": "",
-          "description": "",
+          "description": "The majority of subsurface petroleum and natural gas (PNG) resources in British Columbia (B.C.) are owned by the Province. By entering into a tenure agreement with the Province, private industry can develop these resources. Tenure agreements are the mechanism used by the Province to give rights to petroleum and natural gas resources through issuance of Petroleum and Natural Gas Titles.",
           "digest": "",
-          "issuer": "",
+          "issuer": "Director of Petroleum Lands",
           "language": "en",
-          "name": "",
+          "name": "B.C. Petroleum & Natural Gas Title",
           "type": "spec/overlays/meta/1.0"
         },
         {
@@ -59,9 +65,8 @@
           "secondary_background_color": "#00264D",
           "capture_base": "",
           "digest": "",
-          "expiry_date_attribute": "",
-          "primary_attribute": "title_no",
-          "secondary_attribute": "title_type",
+          "primary_attribute": "titleType",
+          "secondary_attribute": "titleNumber",
           "type": "aries/overlays/branding/1.0"
         }
       ]

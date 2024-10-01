@@ -14,9 +14,8 @@ from multiformats import multibase
 import base64
 
 DEFAULT_ALG = "ed25519"
-ALG_MAPPINGS = {
-    "ed25519": {"prefix_hex": "ed01", "prefix_length": 2}
-}
+ALG_MAPPINGS = {"ed25519": {"prefix_hex": "ed01", "prefix_length": 2}}
+
 
 class AskarWallet:
     def __init__(self):
@@ -27,34 +26,33 @@ class AskarWallet:
 
     async def provision(self, recreate=False):
         await Store.provision(self.db, "raw", self.store_key, recreate=recreate)
-        
+
         # Register the endorser
         await self.create_key(kid=None, seed=None)
 
         # Register the issuers
         for issuer in settings.ISSUERS:
-            await self.create_key(kid=issuer['id'], seed=None)
-            
+            await self.create_key(kid=issuer["id"], seed=None)
+
             # TODO create status list
-            
-        
+
     def multikey_to_jwk(self, multikey):
         return multikey
-            
-        
+
     def _to_multikey(self, public_bytes, alg=DEFAULT_ALG):
         prefix_hex = ALG_MAPPINGS[alg]["prefix_hex"]
-        return multibase.encode(bytes.fromhex(f"{prefix_hex}{public_bytes.hex()}"), "base58btc")
-            
+        return multibase.encode(
+            bytes.fromhex(f"{prefix_hex}{public_bytes.hex()}"), "base58btc"
+        )
 
     async def create_key(self, kid=None, seed=None):
         if not seed:
-            seed=secrets.token_urlsafe(32)
+            seed = secrets.token_urlsafe(32)
         store = await Store.open(self.db, "raw", self.store_key)
         key = Key(LocalKeyHandle()).from_seed(KeyAlg.ED25519, seed)
         multikey = self._to_multikey(key.get_public_bytes())
         if not kid:
-            kid=f'did:key:{multikey}'
+            kid = f"did:key:{multikey}"
         print(kid)
         try:
             async with store.session() as session:
@@ -80,7 +78,7 @@ class AskarWallet:
         store = await Store.open(self.db, "raw", self.store_key)
         async with store.session() as session:
             secret_bytes = await session.fetch("key", kid)
-            return secret_bytes.tags['multikey']
+            return secret_bytes.tags["multikey"]
 
     async def add_proof(self, document, proof_options):
         existing_proof = document.pop("proof", [])
@@ -97,7 +95,7 @@ class AskarWallet:
             sha256(canonicaljson.encode_canonical_json(document)).digest()
             + sha256(canonicaljson.encode_canonical_json(proof_options)).digest()
         )
-        kid = proof_options['verificationMethod'].split('#')[0]
+        kid = proof_options["verificationMethod"].split("#")[0]
         key = await self.get_key(kid)
         proof_bytes = key.sign_message(hash_data)
         proof = proof_options.copy()
@@ -108,28 +106,31 @@ class AskarWallet:
         secured_document["proof"].append(proof)
 
         return secured_document
-    
+
     async def sign_vc_jose(self, vc):
-        issuer = vc['issuer']['id']
+        issuer = vc["issuer"]["id"]
         headers = {
-            'alg': 'EdDSA',
-            'kid': f'{issuer}#jwk-01',
-            'typ': 'vc+ld+json',
-            'cty': 'vc+ld+json'
+            "alg": "EdDSA",
+            "kid": f"{issuer}#jwk-01",
+            "typ": "vc+ld+json",
+            "cty": "vc+ld+json",
         }
-        encoded_headers = base64.urlsafe_b64encode(json.dumps(headers).encode()).decode().rstrip("=")
-        encoded_payload = base64.urlsafe_b64encode(json.dumps(vc).encode()).decode().rstrip("=")
+        encoded_headers = (
+            base64.urlsafe_b64encode(json.dumps(headers).encode()).decode().rstrip("=")
+        )
+        encoded_payload = (
+            base64.urlsafe_b64encode(json.dumps(vc).encode()).decode().rstrip("=")
+        )
         key = await AskarWallet().get_key(issuer)
         signature = key.sign_message(f"{encoded_headers}.{encoded_payload}".encode())
-        
+
         encoded_signature = base64.urlsafe_b64encode(signature).decode().rstrip("=")
         jwt_token = f"{encoded_headers}.{encoded_payload}.{encoded_signature}"
         return {
             "@context": "https://www.w3.org/ns/credentials/v2",
             "id": f"data:application/vc+jwt,{jwt_token}",
-            "type": "EnvelopedVerifiableCredential"
+            "type": "EnvelopedVerifiableCredential",
         }
-
 
 
 class AskarStorage:
@@ -141,11 +142,9 @@ class AskarStorage:
 
     async def provision(self, recreate=False):
         await Store.provision(self.db, "raw", self.key, recreate=recreate)
-        issuer_registrations = {
-            'issuers': []
-        }
+        issuer_registrations = {"issuers": []}
         try:
-            await self.store('registration', 'issuers', issuer_registrations)
+            await self.store("registration", "issuers", issuer_registrations)
         except:
             pass
 
@@ -160,6 +159,15 @@ class AskarStorage:
             return json.loads(data.value)
         except:
             return None
+
+    async def replace(self, category, data_key, data):
+        try:
+            self.store(category, data_key, data)
+        except:
+            try:
+                self.update(category, data_key, data)
+            except:
+                raise HTTPException(status_code=400, detail="Couldn't replace record.")
 
     async def store(self, category, data_key, data):
         store = await self.open()
@@ -188,23 +196,26 @@ class AskarStorage:
             raise HTTPException(status_code=404, detail="Couldn't update record.")
 
     async def add_issuer(self, did, name, description):
-        issuer_registrations = await AskarStorage().fetch('registration', 'issuers')
+        issuer_registrations = await AskarStorage().fetch("registration", "issuers")
         if next(
             (
                 issuer
-                for issuer in issuer_registrations['issuers']
-                if issuer["id"]
-                == did
+                for issuer in issuer_registrations["issuers"]
+                if issuer["id"] == did
             ),
             None,
         ):
             raise HTTPException(status_code=419, detail="Issuer already exists.")
-        issuer_registrations['issuers'].append({
-            'id': did,
-            'name': name,
-            'description': description,
-        })
-        issuer_registrations = await AskarStorage().update('registration', 'issuers', issuer_registrations)
+        issuer_registrations["issuers"].append(
+            {
+                "id": did,
+                "name": name,
+                "description": description,
+            }
+        )
+        issuer_registrations = await AskarStorage().update(
+            "registration", "issuers", issuer_registrations
+        )
 
 
 class AskarVerifier:
@@ -214,7 +225,7 @@ class AskarVerifier:
         self.purpose = "authentication"
         if multikey:
             self.key = Key().from_public_bytes(
-                alg='ed25519', public=bytes(bytearray(multibase.decode(multikey))[2:])
+                alg="ed25519", public=bytes(bytearray(multibase.decode(multikey))[2:])
             )
 
     def create_proof_config(self):
@@ -271,7 +282,9 @@ class AskarVerifier:
         )
 
         try:
-            return self.verifier.verify_signature(message=proof_bytes+hash_data, signature=None)
+            return self.verifier.verify_signature(
+                message=proof_bytes + hash_data, signature=None
+            )
         except:
             raise HTTPException(
                 status_code=400, detail="Signature was forged or corrupt."

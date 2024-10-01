@@ -6,7 +6,7 @@ from flask import (
     session,
 )
 from app.routes.auth import bp
-from .forms import AccessForm
+from .forms import IssuerAccessForm, AdminAccessForm
 
 
 # @bp.before_request
@@ -17,15 +17,19 @@ from .forms import AccessForm
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
-    form = AccessForm()
+    admin_access_form = AdminAccessForm()
+    issuer_access_form = IssuerAccessForm()
     session['invitation'] = 'my_qr_code'
-    if form.submit.data and form.validate():
+    if admin_access_form.submit.data and admin_access_form.validate():
         session['token'] = True
         return redirect(url_for('main.index'))
+    if issuer_access_form.submit.data and issuer_access_form.validate():
+        pass
     return render_template(
         "pages/auth/index.jinja",
         title='Login',
-        form=form
+        admin_access_form=admin_access_form,
+        issuer_access_form=issuer_access_form,
     )
 
 

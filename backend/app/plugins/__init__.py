@@ -3,6 +3,7 @@ from .did_web import DidWebEndorser
 from .agent import AgentController
 from .orgbook import OrgbookPublisher
 from .untp import DigitalConformityCredential
+from .status_list import BitstringStatusList
 
 __all__ = [
     "AgentController",
@@ -11,5 +12,6 @@ __all__ = [
     "AskarWallet",
     "DidWebEndorser",
     "OrgbookPublisher",
-    "DigitalConformityCredential"
+    "BitstringStatusList",
+    "DigitalConformityCredential",
 ]

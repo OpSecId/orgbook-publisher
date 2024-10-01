@@ -8,11 +8,23 @@ import json
 
 router = APIRouter()
 
+
 @router.get("/contexts/{filename}/v1")
 async def get_context_file(filename: str):
     try:
         headers = {"Content-Type": "application/ld+json"}
-        with open(f'app/related_resources/contexts/{filename}.jsonld', 'r') as f:
+        with open(f"app/related_resources/contexts/{filename}.jsonld", "r") as f:
+            context = json.loads(f.read())
+        return JSONResponse(status_code=200, content=context, headers=headers)
+    except:
+        raise HTTPException(status_code=404, detail="Ressource not found.")
+
+
+@router.get("/oca-bundles/{filename}/v1")
+async def get_oca_bundle(filename: str):
+    try:
+        headers = {"Content-Type": "application/json"}
+        with open(f"app/related_resources/oca_bundles/{filename}.json", "r") as f:
             context = json.loads(f.read())
         return JSONResponse(status_code=200, content=context, headers=headers)
     except:

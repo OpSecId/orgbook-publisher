@@ -5,24 +5,26 @@ from .proof import DataIntegrityProof
 from config import settings
 import uuid
 
-BASE_CONTEXT = 'https://www.w3.org/ns/credentials/v2'
-BASE_VC_TYPE = 'VerifiableCredential'
-EXAMPLE_ID = f'https://{settings.DOMAIN}/credentials/{uuid.uuid4()}'
-EXAMPLE_ISSUER = 'did:web:example.com:issuer'
-EXAMPLE_SUBJECT = {'id': 'did:web:example.com:subject'}
+BASE_CONTEXT = "https://www.w3.org/ns/credentials/v2"
+BASE_VC_TYPE = "VerifiableCredential"
+EXAMPLE_ID = f"https://{settings.DOMAIN}/credentials/{uuid.uuid4()}"
+EXAMPLE_ISSUER = "did:web:example.com:issuer"
+EXAMPLE_SUBJECT = {"id": "did:web:example.com:subject"}
+
 
 class BaseModel(BaseModel):
-    
     def model_dump(self, **kwargs) -> Dict[str, Any]:
         return super().model_dump(by_alias=True, exclude_none=True, **kwargs)
+
 
 class Issuer(BaseModel):
     id: str = Field(example=EXAMPLE_ISSUER)
     name: SkipJsonSchema[str] = Field(None)
     description: SkipJsonSchema[str] = Field(None)
 
+
 class Credential(BaseModel):
-    context: List[str] = Field(None, alias='@context')
+    context: List[str] = Field(None, alias="@context")
     type: List[str] = Field(None)
     id: SkipJsonSchema[str] = Field(None)
     issuer: Issuer = Field(None)
