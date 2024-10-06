@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "backend.fullname" . }}
+  labels:
+    {{- include "backend.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.backend.service.type }}
+  selector:
+    {{- include "backend.selectorLabels" . | nindent 4 }}
+  ports:
+    - port: {{ .Values.backend.service.servicePort }}
+      targetPort: {{ .Values.backend.service.apiPort }}
+      protocol: TCP
+      name: api

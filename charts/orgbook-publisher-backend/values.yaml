@@ -1,0 +1,70 @@
+---
+nameOverride: "orgbook-publisher"
+fullnameOverride: "orgbook-publisher"
+ingressSuffix: ""
+
+selectorLabels: {}
+
+backend:
+  image:
+    repository: ghcr.io/opsecid/orgbook-publisher
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+
+  replicaCount: 1
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  containerSecurityContext: {}
+
+  service:
+    type: ClusterIP
+    apiPort: 8000
+    servicePort: 8000
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 512Mi
+    requests:
+      cpu: 10m
+      memory: 128Mi
+
+  networkPolicy:
+    ingress:
+      podSelector: {}
+
+postgresql:
+  enabled: true
+  fullnameOverride: "orgbook-publisher-postgresql"
+  nameOverride: "orgbook-publisher-postgresql"
+  architecture: standalone
+  auth:
+    enablePostgresUser: true
+    username: "orgbook-publisher"
+
+  ## PostgreSQL Primary parameters
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi
+    containerSecurityContext:
+      enabled: false
+    podSecurityContext:
+      enabled: false
+    resources:
+      limits:
+        cpu: 800m
+        memory: 500Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    service:
+      ports:
+        postgresql: 5432
+    extendedConfiguration: |
+      max_connections = 500
+
+  networkPolicy:
+    ingress:
+      podSelector: {}
