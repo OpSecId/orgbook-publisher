@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from app.models.web_schemas import (
-    RegisterCredential,
     IssueCredential,
     PublishCredential,
 )
@@ -11,58 +10,23 @@ from app.plugins import (
     AskarVerifier,
     AskarStorage,
     AskarWallet,
-    DidWebEndorser,
     OrgbookPublisher,
     BitstringStatusList,
     DigitalConformityCredential,
 )
-from app.utilities import freeze_ressource_digest
 import uuid
 from datetime import datetime, timezone, timedelta
 import json
 
-import base64
-
 router = APIRouter()
 
-
-@router.post("/credentials/register")
-async def register_credential(request_body: RegisterCredential):
-    credential_registration = request_body.model_dump()["credentialRegistration"]
-
-    # Create a new status list for this type of credential
-    status_list = await BitstringStatusList().create(credential_registration)
-    credential_registration["statusList"] = [status_list]
-
-    await AskarStorage().replace(
-        "credentialRegistration",
-        credential_registration["type"],
-        credential_registration,
-    )
-
-    return JSONResponse(
-        status_code=201,
-        content=credential_registration,
-    )
-
-    # TODO, find another way to get verificationMethod
-    verification_method = credential_registration["issuer"] + "#multikey-01"
-    credential_type = await OrgbookPublisher().create_credential_type(
-        credential_registration, verification_method
-    )
-
-    return JSONResponse(
-        status_code=201,
-        content=credential_type,
-    )
-
-
-@router.post("/credentials/publish")
+@router.post("/credentials")
 async def publish_credential(request_body: PublishCredential):
     # valid_from = request_body.model_dump()['validFrom']
     # valid_until = request_body.model_dump()['validUntil']
-    credential_type = request_body.model_dump()["credentialType"]
-    credential_subject = request_body.model_dump()["credentialSubject"]
+    data = request_body.model_dump()["data"]
+    options = request_body.model_dump()["options"]
+    credential_type = options["credentialType"]
 
     try:
         credential_registration = await AskarStorage().fetch(
@@ -70,6 +34,7 @@ async def publish_credential(request_body: PublishCredential):
         )
     except:
         raise HTTPException(status_code=404, detail="Unknown credential type.")
+    # return JSONResponse(status_code=200, content=credential_registration)
 
     credential = {}
 
@@ -77,8 +42,8 @@ async def publish_credential(request_body: PublishCredential):
     contexts = ["https://www.w3.org/ns/credentials/v2"]
     types = ["VerifiableCredential"]
 
-    # credential['validFrom'] = ''
-    # credential['validUntil'] = ''
+    # credential['validFrom'] = options['validFrom']
+    # credential['validUntil'] = options['validUntil']
 
     # UNTP type and context
     if "untpType" in credential_registration:
@@ -87,49 +52,47 @@ async def publish_credential(request_body: PublishCredential):
 
         # DigitalConformityCredential template
         if credential_registration["untpType"] == "DigitalConformityCredential":
-            credential_subject = DigitalConformityCredential().vc_to_dcc(
-                credential_subject, credential_registration
-            )
+            governance = {}
+            legal_act = {}
+            credential_subject = DigitalConformityCredential().attestation(
+                credential_registration
+            ).model_dump()
 
     credential_status = {}
 
     # BCGov type and context
-    contexts.append(credential_registration["ressources"]["context"])
+    contexts.append(credential_registration["relatedResources"]["context"])
     types.append(credential_registration["type"])
 
     credential_id = str(uuid.uuid4())
-    issuer = next(
-        (
-            issuer
-            for issuer in settings.ISSUERS
-            if issuer["id"] == credential_registration["issuer"]
-        ),
-        None,
-    )
+    issuer = await AskarStorage().fetch('didRegistration', credential_registration['issuer'])
 
     credential = {
         "@context": contexts,
         "type": types,
         "id": f"https://{settings.DOMAIN}/credentials/{credential_id}",
         "issuer": issuer,
-        "name": credential_registration["name"],
-        "description": credential_registration["description"],
-        "credentialSubject": credential_subject,
-        "credentialStatus": credential_status,
+        "credentialSubject": credential_subject
+        # "name": credential_registration["name"],
+        # "description": credential_registration["description"],
+        # "credentialStatus": credential_status,
     }
 
     # TODO, find a better way to get verification method
-    verification_method = credential_registration["issuer"] + "#multikey-01"
+    verification_method = issuer["id"] + "#multikey-01"
 
     proof_options = {
         "type": "DataIntegrityProof",
         "cryptosuite": "eddsa-jcs-2022",
-        # 'proofPurpose': 'authentication',
         "proofPurpose": "assertionMethod",
         "verificationMethod": verification_method,
         "created": str(datetime.now().isoformat("T", "seconds")),
     }
 
+    return JSONResponse(status_code=200, content={
+        'credential': credential,
+        'options': proof_options
+    })
 
 @router.post("/credentials/issue")
 async def issue_credential(request_body: IssueCredential):
@@ -193,17 +156,17 @@ async def issue_credential(request_body: IssueCredential):
     return JSONResponse(status_code=201, content=vc)
 
 
-# @router.get("/credentials/{credential_id}")
-# async def get_credential(credential_id: str, envelope: bool = False):
-#     headers = {"Content-Type": "application/ld+json"}
-#     vc = await AskarStorage().fetch('credential', credential_id)
-#     if envelope:
-#         vc = await AskarWallet().sign_vc_jose(vc)
-#     return JSONResponse(
-#         status_code=200,
-#         content=vc,
-#         headers=headers
-#     )
+@router.get("/credentials/{credential_id}")
+async def get_credential(credential_id: str, envelope: bool = False):
+    headers = {"Content-Type": "application/ld+json"}
+    vc = await AskarStorage().fetch('credential', credential_id)
+    if envelope:
+        vc = await AskarWallet().sign_vc_jose(vc)
+    return JSONResponse(
+        status_code=200,
+        content=vc,
+        headers=headers
+    )
 
 
 # @router.post("/credentials/status")

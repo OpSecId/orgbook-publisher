@@ -12,15 +12,16 @@ class Settings(BaseSettings):
 
     DOMAIN: str = os.environ["DOMAIN"]
 
-    # TRACTION_API_URL: str = os.environ["TRACTION_API_URL"]
-    # TRACTION_API_KEY: str = os.environ["TRACTION_API_KEY"]
-    # TRACTION_TENANT_ID: str = os.environ["TRACTION_TENANT_ID"]
+    TRACTION_API_URL: str = os.environ["TRACTION_API_URL"]
+    TRACTION_API_KEY: str = os.environ["TRACTION_API_KEY"]
+    TRACTION_TENANT_ID: str = os.environ["TRACTION_TENANT_ID"]
 
     ORGBOOK_URL: str = os.environ["ORGBOOK_URL"]
     ORGBOOK_API_URL: str = f"{ORGBOOK_URL}/api/v4"
     ORGBOOK_VC_SERVICE: str = f"{ORGBOOK_URL}/api/vc"
 
     TDW_SERVER_URL: str = os.environ["TDW_SERVER_URL"]
+    TDW_ENDORSER_MULTIKEY: str = os.environ["TDW_ENDORSER_MULTIKEY"]
 
     # AGENT_ADMIN_URL: str = os.environ["AGENT_ADMIN_URL"]
     # AGENT_ADMIN_API_KEY: str = TRACTION_API_KEY
@@ -33,14 +34,14 @@ class Settings(BaseSettings):
         else "sqlite://app.db"
     )
 
-    ISSUERS: list = [
-        {
-            "id": f"did:web:{DOMAIN}:petroleum-and-natural-gas-act:director-of-petroleum-lands",
-            "name": "Director of Petroleum Lands",
-            "description": "An officer or employee of the ministry who is designated as the Director of Petroleum Lands by the minister.",
-            "url": "https://www2.gov.bc.ca/gov/content/governments/organizational-structure/ministries-organizations/ministries/energy-mines-and-petroleum-resources",
-        }
-    ]
+    # ISSUERS: list = [
+    #     {
+    #         "id": f"did:web:{DOMAIN}:petroleum-and-natural-gas-act:director-of-petroleum-lands",
+    #         "name": "Director of Petroleum Lands",
+    #         "description": "An officer or employee of the ministry who is designated as the Director of Petroleum Lands by the minister.",
+    #         "url": "https://www2.gov.bc.ca/gov/content/governments/organizational-structure/ministries-organizations/ministries/energy-mines-and-petroleum-resources",
+    #     }
+    # ]
 
 
 settings = Settings()

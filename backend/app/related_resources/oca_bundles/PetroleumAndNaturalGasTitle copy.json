@@ -1,38 +1,40 @@
 [
     {
       "capture_base": {
-        "type": "spec/capture_base/1.0",
         "attributes": {
+          "entityId": "Text",
+          "entityName": "Text",
+          "interest": "Numeric",
           "titleType": "Text",
-          "titleNumber": "Numeric",
-          "titleHolder": "Text",
-          "tractComodity": "List[Text]",
-          "tractRights": "List[Text]",
-          "tractNotes": "List[Text]"
-        }
+          "titleNumber": "Numeric"
+        },
+        "classification": "",
+        "digest": "",
+        "flagged_attributes": [],
+        "type": "spec/capture_base/1.0"
       },
       "overlays": [
         {
-          "type": "vc/overlays/paths/1.0",
-          "attribute_paths": {
-            "type": "$.credentialSubject.type",
+          "attribute_mapping": {
+            "entityId": "$.credentialSubject.issuedToParty.registeredId",
+            "entityName": "$.credentialSubject.issuedToParty.name",
+            "interest": "$.credentialSubject.issuedToParty.interest",
             "titleType": "$.credentialSubject.titleType",
-            "titleNumber": "$.credentialSubject.titleNumber",
-            "titleHolderType": "$.credentialSubject.issuedToParty.type",
-            "titleHolder": "$.credentialSubject.issuedToParty.name",
-            "titleHolderInterest": "$.credentialSubject.issuedToParty.interest",
-            "titleCaveats": "$.credentialSubject.caveats",
-            "tractType": "$.credentialSubject.assessment[0]assessedProduct[*]type",
-            "tractCommodities": "$.credentialSubject.assessment[0]assessedProduct[*]commodities",
-            "tractLocations": "$.credentialSubject.assessment[0]assessedProduct[*]locations",
-            "tractRights": "$.credentialSubject.assessment[0]assessedProduct[*]rights",
-            "tractNotes": "$.credentialSubject.assessment[0]assessedProduct[*]notes",
-            "wellType": "$.credentialSubject.assessment[0]assessedFacility[*]type",
-            "wellNames": "$.credentialSubject.assessment[0]assessedFacility[*]commodities",
-            "wellLocations": "$.credentialSubject.assessment[0]assessedFacility[*]rights"
-          }
+            "titleNumber": "$.credentialSubject.titleNumber"
+          },
+          "capture_base": "",
+          "digest": "",
+          "type": "spec/overlays/mapping/1.0"
         },
         {
+          "attribute_character_encoding": {},
+          "capture_base": "",
+          "default_character_encoding": "utf-8",
+          "digest": "",
+          "type": "spec/overlays/character_encoding/1.0"
+        },
+        {
+          "attribute_categories": [],
           "attribute_labels": {
             "entityId": "Entity Id",
             "entityName": "Entity Name",
@@ -40,6 +42,9 @@
             "titleType": "Title Type",
             "titleNumber": "Title Number"
           },
+          "capture_base": "",
+          "category_labels": {},
+          "digest": "",
           "language": "en",
           "type": "spec/overlays/label/1.0"
         },

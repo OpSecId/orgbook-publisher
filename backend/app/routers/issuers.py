@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
-from app.models.web_schemas import RegisterIssuer
+from app.models.registrations import IssuerRegistration
 from config import settings
 from app.plugins import AskarStorage, DidWebEndorser, AskarWallet
 from app.models import DidDocument, VerificationMethod, Service
@@ -9,7 +9,8 @@ router = APIRouter()
 
 
 @router.post("/issuers", summary="Register issuer.")
-async def register_issuer(request_body: RegisterIssuer):
+async def register_issuer(request_body: IssuerRegistration):
+    url = vars(request_body)["url"]
     name = vars(request_body)["name"]
     scope = vars(request_body)["scope"]
     description = vars(request_body)["description"]
@@ -17,9 +18,54 @@ async def register_issuer(request_body: RegisterIssuer):
     identifier = name.replace(" ", "-").lower()
     did = f"did:web:{settings.DOMAIN}:{namespace}:{identifier}"
     # did_document = await DidWebEndorser().did_registration(namespace, identifier)
-    did_document = DidDocument(id=did, name=name, description=description).model_dump()
+    multikey = await AskarWallet().create_key()
+    
+    verification_method_multikey = VerificationMethod(
+        id=f'{did}#multikey-01',
+        type='Multikey',
+        controller=did,
+        publicKeyMultibase=multikey
+    )
+    
+    verification_method_jwk = VerificationMethod(
+        id=f'{did}#jwk-01',
+        type='JsonWebKey',
+        controller=did,
+        publicKeyJwk={
+            "kty": "OKP",
+            "crv": "Ed25519",
+            "x": multikey
+        }
+    )
+    
+    service = Service(
+        id=f'{did}#bcgov-website',
+        type='LinkedDomains',
+        serviceEndpoint=url,
+    ) if url else None
+
+    did_document = DidDocument(
+        id=did, 
+        name=name, 
+        description=description,
+        authentication=[verification_method_multikey.id],
+        assertionMethod=[verification_method_multikey.id],
+        verificationMethod=[
+            verification_method_multikey,
+            verification_method_jwk
+        ],
+        service=[service] if service else None
+    ).model_dump()
+    options = {
+        'type': 'DataIntegrityProof',
+        'cryptosuite': 'eddsa-jcs-2022',
+        'proofPurpose': 'authentication',
+        'verificationMethod': f'did:key:{multikey}#{multikey}',
+    }
+    signed_did_doc = await AskarWallet().add_proof(did_document, options)
+        
     # await AskarStorage().store('didRegistration', did_document['id'], did_document)
-    return JSONResponse(status_code=201, content=did_document)
+    return JSONResponse(status_code=201, content=signed_did_doc)
 
 
 # @router.get("/issuers")

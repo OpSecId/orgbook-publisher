@@ -14,38 +14,6 @@ class BaseModel(BaseModel):
         return super().model_dump(by_alias=True, exclude_none=True, **kwargs)
 
 
-class RegisterIssuer(BaseModel):
-    # namespace: str = Field(example="petroleum-and-natural-gas-act")
-    # identifier: str = Field(example="director-of-petroleum-lands")
-    name: str = Field(example="Director of Petroleum Lands")
-    scope: str = Field(example="Petroleum and Natrual Gas Act")
-    description: str = Field(
-        example="An officer or employee of the ministry who is designated as the Director of Petroleum Lands by the minister."
-    )
-
-    # @field_validator("namespace")
-    # @classmethod
-    # def validate_namespace(cls, value):
-    #     return value
-
-    # @field_validator("identifier")
-    # @classmethod
-    # def validate_identifer(cls, value):
-    #     return value
-
-
-with open(
-    "app/related_resources/credential_types/PetroleumAndNaturalGasTitle.json"
-) as f:
-    EXAMPLE_CREDENTIAL_TYPE = json.loads(f.read(), object_pairs_hook=OrderedDict)
-
-
-class RegisterCredential(BaseModel):
-    credentialRegistration: CredentialRegistration = Field(
-        example=EXAMPLE_CREDENTIAL_TYPE
-    )
-
-
 with open("app/related_resources/credentials/PetroleumAndNaturalGasTitle.json") as f:
     EXAMPLE_CREDENTIAL = json.loads(f.read(), object_pairs_hook=OrderedDict)
 
@@ -57,11 +25,39 @@ class IssueCredential(BaseModel):
     options: IssuanceOptions = Field(example=EXAMPLE_ISSUANCE_OPTIONS)
 
 
-class PublishCredential(BaseModel):
-    validFrom: str = Field(None)
-    validUntil: str = Field(None)
-    credentialType: str = Field(example="BCPetroleum&NaturalGasTitle")
-    credentialSubject: dict = Field(example={})
+example_subject = {
+    'type': 'Petroleum&NaturalGasTitle',
+    'products': [],
+    'facilities': [],
+}
 
-    def model_dump(self, **kwargs) -> Dict[str, Any]:
-        return super().model_dump(by_alias=True, exclude_none=True, **kwargs)
+example_data = {
+    'titleType': '',
+    'titleNumber': '',
+    'titleHolder': '',
+    'originType': '',
+    'originNumber': '',
+    'caveats': [],
+    'tracts': [],
+    'wells': [],
+}
+
+with open("app/data/PetroleumAndNaturalGasTitle.json") as f:
+    EXAMPLE_CREDENTIAL_DATA = json.loads(f.read(), object_pairs_hook=OrderedDict)
+
+class DataToPublish(BaseModel):
+    pass
+
+# class CredentialToPublish(BaseModel):
+#     credentialSubject: dict = Field(example=example_subject)
+
+class PublishingOptions(BaseModel):
+    validFrom: str = Field(None, example='2024-01-01T00:00:00Z')
+    validUntil: str = Field(None, example='2025-01-01T00:00:00Z')
+    entityId: str = Field(example='A0131571')
+    credentialType: str = Field(example="BCPetroleumAndNaturalGasTitleCredential")
+
+class PublishCredential(BaseModel):
+    data: DataToPublish = Field(example=EXAMPLE_CREDENTIAL_DATA)
+    # credential: CredentialToPublish = Field()
+    options: PublishingOptions = Field()

@@ -13,8 +13,9 @@ class Config(object):
 
     # # Backend API
     # ORGBOOK_PUBLISHER = os.environ["ORGBOOK_PUBLISHER"]
-    ADMIN_ID = os.environ["TRACTION_TENANT_ID"]
-    ADMIN_KEY = os.environ["TRACTION_API_KEY"]
+    TRACTION_API_URL = os.environ["TRACTION_API_URL"]
+    TRACTION_API_KEY = os.environ["TRACTION_API_KEY"]
+    TRACTION_TENANT_ID = os.environ["TRACTION_TENANT_ID"]
 
     # # Flask-session with redis
     # SESSION_TYPE = "redis"

@@ -28,11 +28,11 @@ class AskarWallet:
         await Store.provision(self.db, "raw", self.store_key, recreate=recreate)
 
         # Register the endorser
-        await self.create_key(kid=None, seed=None)
+        # await self.create_key(kid=None, seed=None)
 
         # Register the issuers
-        for issuer in settings.ISSUERS:
-            await self.create_key(kid=issuer["id"], seed=None)
+        # for issuer in settings.ISSUERS:
+        #     await self.create_key(kid=issuer["id"], seed=None)
 
             # TODO create status list
 
@@ -53,7 +53,6 @@ class AskarWallet:
         multikey = self._to_multikey(key.get_public_bytes())
         if not kid:
             kid = f"did:key:{multikey}"
-        print(kid)
         try:
             async with store.session() as session:
                 await session.insert(
@@ -162,10 +161,10 @@ class AskarStorage:
 
     async def replace(self, category, data_key, data):
         try:
-            self.store(category, data_key, data)
+            await self.store(category, data_key, data)
         except:
             try:
-                self.update(category, data_key, data)
+                await self.update(category, data_key, data)
             except:
                 raise HTTPException(status_code=400, detail="Couldn't replace record.")
 
