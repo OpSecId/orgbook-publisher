@@ -25,7 +25,8 @@ class AskarWallet:
         )
 
     async def provision(self, recreate=False):
-        await Store.provision(self.db, "raw", self.store_key, recreate=recreate)
+        print(f'Initializaing database: {self.db}')
+        # await Store.provision(self.db, "raw", self.store_key, recreate=recreate)
 
         # Register the endorser
         # await self.create_key(kid=None, seed=None)
