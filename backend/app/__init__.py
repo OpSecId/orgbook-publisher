@@ -1,10 +1,11 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import issuers, credentials, related_resources
+from app.routers import registrations, credentials
 from config import settings
 
 app = FastAPI(title=settings.PROJECT_TITLE, version=settings.PROJECT_VERSION)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -16,14 +17,12 @@ app.add_middleware(
 
 api_router = APIRouter()
 
-api_router.include_router(issuers.router, tags=["Issuers"])
-api_router.include_router(credentials.router, tags=["Credentials"])
-api_router.include_router(related_resources.router, tags=["Related Resources"])
-
-
 @api_router.get("/server/status", tags=["Server"], include_in_schema=False)
 async def server_status():
     return JSONResponse(status_code=200, content={"status": "ok"})
+
+api_router.include_router(credentials.router)
+api_router.include_router(registrations.router)
 
 
 app.include_router(api_router)

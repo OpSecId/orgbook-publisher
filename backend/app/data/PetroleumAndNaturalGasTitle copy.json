@@ -1,0 +1,46 @@
+{
+  "type": "Petroleum&NaturalGasTitle",
+  "titleType": "PETROLEUM AND NATURAL GAS LEASE",
+  "titleNumber": 745,
+  "titleHolderType": "TitleHolder",
+  "titleHolder": "PACIFIC CANBRIAM ENERGY LIMITED",
+  "titleHolderInterest": 100.00,
+  "titleCaveats": [],
+  "tractType": "Tract",
+  "tractCommodities": [
+    [
+      "PETROLEUM",
+      "NATURAL GAS"
+    ]
+  ],
+  "tractLocations": [
+    [
+      "NTS 094-B-08 BLK I UNITS 92 93",
+      "NTS 094-B-09 BLK A UNITS 2 3"
+    ]
+  ],
+  "tractRights": [
+    [
+      "INCLUDES: PETROLEUM AND NATURAL GAS DOWN TO BASE OF 32505 BELLOY ZONE",
+      "EXCLUDES: NATURAL GAS IN 34002 ARTEX-HALFWAY-DOIG ZONE"
+    ]
+  ],
+  "tractNotes": [
+    [
+      "32505 BELLOY ZONE DEFINED IN THE INTERVAL 6537'-6626' MD ON THE GAMMA RAY-NEUTRON LOG OF THE WELL W.A. 141 d-94-I/94-B-8",
+      "34002 ARTEX-HALFWAY-DOIG ZONE DEFINED IN THE INTERVAL 5970.7'-6952.7' ON THE GAMMA RAY NEUTRON LOG OF THE WELL W.A. 238 C-53-D/94-B-09"
+    ]
+  ],
+  "wellType": "Well",
+  "wellNames": [
+    [
+      "PACIFIC CANBRIAM"
+    ]
+  ],
+  "wellLocations": [
+    [
+      "KOBES A- 003-A/094-B-09"
+    ]
+  ]
+}
+       

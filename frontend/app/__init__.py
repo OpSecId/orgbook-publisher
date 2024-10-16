@@ -11,13 +11,13 @@ import os
 
 def create_app(config_class=Config):
     app = Flask(__name__)
-    app.secret_key = 's3cret'
+    app.config.from_object(config_class)
 
     CORS(app)
     QRcode(app)
     # Session(app)
 
-    app.register_blueprint(errors_bp)
+    # app.register_blueprint(errors_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
 

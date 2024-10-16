@@ -5,31 +5,40 @@ from pydantic import BaseModel, Field, AnyUrl
 
 
 class BaseModel(BaseModel):
+    type: List[str] = None
+    id: str = None
+    name: str = None
+    description: str = None
+    
     def model_dump(self, **kwargs) -> Dict[str, Any]:
         return super().model_dump(by_alias=True, exclude_none=True, **kwargs)
 
 
+
 class IdentifierScheme(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#identifierscheme
-    type: str = "IdentifierScheme"
+    type: List[str] = ["IdentifierScheme"]
+    
+class Identifier(BaseModel):
+    type: List[str] = ["Identifier"]
+    
+    registeredId: str
+    idScheme: IdentifierScheme
 
-    id: AnyUrl  # from vocabulary.uncefact.org/identifierSchemes
-    name: str
 
-
-class Entity(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#entity
-    type: str = "Entity"
-
-    id: str
-    name: str
+class Party(BaseModel):
+    type: List[str] = ["Party"]
+    
     registeredId: Optional[str] = None
     idScheme: Optional[IdentifierScheme] = None
+    registrationCountry: Optional[IdentifierScheme] = None
+    organisationWebsite: Optional[IdentifierScheme] = None
+    industryCategory: Optional[IdentifierScheme] = None
+    otherIdentifier: Optional[Identifier] = None
+
 
 
 class BinaryFile(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#binaryfile
-    type: str = "BinaryFile"
+    type: List[str] = ["BinaryFile"]
 
     fileName: str
     fileType: str  # https://mimetype.io/all-types
@@ -37,8 +46,7 @@ class BinaryFile(BaseModel):
 
 
 class Link(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#link
-    type: str = "Link"
+    type: List[str]  = ["Link"]
 
     linkURL: AnyUrl
     linkName: str
@@ -46,8 +54,7 @@ class Link(BaseModel):
 
 
 class SecureLink(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#securelink
-    type: str = "SecureLink"
+    type: List[str] = ["SecureLink"]
 
     linkUrl: AnyUrl
     linkName: str
@@ -58,8 +65,7 @@ class SecureLink(BaseModel):
 
 
 class Measure(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#measure
-    type: str = "Measure"
+    type: List[str]  = ["Measure"]
 
     value: float
     unit: str = Field(
@@ -68,41 +74,37 @@ class Measure(BaseModel):
 
 
 class Endorsement(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#endorsement
     type: str = "Endorsement"
 
     id: AnyUrl
     name: str
     trustmark: Optional[BinaryFile] = None
-    issuingAuthority: Entity
+    issuingAuthority: Party
     accreditationCertification: Optional[Link] = None
 
 
 class Standard(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#standard
     type: str = "Standard"
 
     id: AnyUrl
     name: str
-    issuingParty: Entity
+    issuingParty: Party
     issueDate: str  # iso8601 datetime string
 
 
 class Regulation(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#regulation
-    type: str = "Regulation"
+    type: List[str] = ["Regulation"]
 
-    id: AnyUrl
-    name: str
+    id: str = None
+    name: str = None
     jurisdictionCountry: (
         str  # countryCode from https://vocabulary.uncefact.org/CountryId
     )
-    administeredBy: Entity
-    effectiveDate: str  # iso8601 datetime string
+    administeredBy: Party
+    effectiveDate: str = None  # iso8601 datetime string
 
 
 class Metric(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#metric
     type: str = "Metric"
 
     metricName: str
@@ -111,7 +113,6 @@ class Metric(BaseModel):
 
 
 class Criterion(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#criterion
     type: str = "Criterion"
 
     id: AnyUrl
@@ -120,11 +121,10 @@ class Criterion(BaseModel):
 
 
 class Facility(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#facility
-    type: str = "Facility"
+    type: List[str] = ["Facility"]
 
     # this looks wrongs
-    id: AnyUrl  # The globally unique ID of the entity as a resolvable URL according to ISO 18975.
+    id: AnyUrl  # The globally unique ID of the Party as a resolvable URL according to ISO 18975.
     name: str
     registeredId: Optional[str] = None
     idScheme: Optional[IdentifierScheme] = None
@@ -132,61 +132,56 @@ class Facility(BaseModel):
 
 
 class Product(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#product
-    type: str = "Product"
+    type: List[str] = ["Product"]
 
-    id: AnyUrl  # The globally unique ID of the entity as a resolvable URL according to ISO 18975.
-    name: str
+    id: AnyUrl = None # The globally unique ID of the Party as a resolvable URL according to ISO 18975.
+    name: str = None
     registeredId: Optional[str] = None
     idScheme: Optional[IdentifierScheme] = None
-    IDverifiedByCAB: bool
+    IDverifiedByCAB: bool = None
 
 
 class ConformityAssessment(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#conformityassessment
-    type: str = "ConformityAssessment"
+    type: List[str] = ["ConformityAssessment"]
 
-    id: AnyUrl
+    id: str = None
     referenceStandard: Optional[Standard] = None  # defines the specification
     referenceRegulation: Optional[Regulation] = None  # defines the regulation
     assessmentCriterion: Optional[Criterion] = None  # defines the criteria
     declaredValues: Optional[List[Metric]] = None
     compliance: Optional[bool] = False
-    # conformityTopic: ConformityTopicCode
+    
+    conformityTopic: str = None
 
-    assessedProducts: Optional[List[Product]] = None
-    assessedFacilities: Optional[List[Facility]] = None
+    assessedProduct: Optional[List[Product]] = []
+    assessedFacility: Optional[List[Facility]] = []
 
 
 class ConformityAssessmentScheme(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#conformityassessmentscheme
     type: str = "ConformityAssessmentScheme"
 
     id: str
     name: str
-    issuingParty: Optional[Entity] = None
+    issuingParty: Optional[Party] = None
     issueDate: Optional[str] = None  # ISO8601 datetime string
     trustmark: Optional[BinaryFile] = None
 
 
 class ConformityAttestation(BaseModel):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#ConformityAttestation
-    type: list = ["ConformityAttestation"]
-    # id: str
-    # assessorLevel: Optional[AssessorLevelCode] = None
-    # assessmentLevel: AssessmentLevelCode
-    # attestationType: AttestationType
-    attestationDescription: Optional[str] = None  # missing from context file
-    issuedToParty: Entity
+    type: List[str] = ["ConformityAttestation"]
+    id: str = None
+    assessorLevel: Optional[str] = None
+    assessmentLevel: str = None
+    attestationType: str = None
+    issuedToParty: Party = None
     authorisations: Optional[Endorsement] = None
     conformityCertificate: Optional[SecureLink] = None
     auditableEvidence: Optional[SecureLink] = None
-    # scope: ConformityAssessmentScheme
-    assessments: List[ConformityAssessment] = None
+    scope: ConformityAssessmentScheme = None
+    assessment: List[ConformityAssessment] = None
 
 
 class AssessorLevelCode(str, Enum):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#assessorLevelCode
     Self = "Self"
     Commercial = "Commercial"
     Buyer = "Buyer"
@@ -196,7 +191,6 @@ class AssessorLevelCode(str, Enum):
 
 
 class AssessmentLevelCode(str, Enum):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#assessmentlevelcode
     GovtApproval = "GovtApproval"
     GlobalMLA = "GlobalMLA"
     Accredited = "Accredited"
@@ -206,7 +200,6 @@ class AssessmentLevelCode(str, Enum):
 
 
 class AttestationType(str, Enum):
-    # https://uncefact.github.io/spec-untp/docs/specification/ConformityCredential/#attestationtype
     Certification = "Certification"
     Declaration = "Declaration"
     Inspection = "Inspection"
@@ -217,7 +210,6 @@ class AttestationType(str, Enum):
 
 
 class HashMethod(str, Enum):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#hashmethodcode
     SHA256 = "SHA-256"
     SHA1 = "SHA-1"
 
@@ -228,7 +220,6 @@ class EncryptionMethod(str, Enum):
 
 
 class ConformityTopicCode(str, Enum):
-    # https://jargon.sh/user/unece/ConformityCredential/v/0.3.10/artefacts/readme/render#conformityTopicCode
     Environment_Energy = "Environment.Energy"
     Environment_Emissions = "Environment.Emissions"
     Environment_Water = "Environment.Water"

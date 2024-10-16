@@ -13,6 +13,11 @@ class IssuanceOptions(BaseModel):
     credentialType: str = Field()
 
 
+class PublishCredentialOptions(BaseModel):
+    entityId: str = Field()
+    credentialType: str = Field()
+
+
 class ProofOptions(BaseModel):
     type: SkipJsonSchema[str] = Field("DataIntegrityProof")
     cryptosuite: SkipJsonSchema[str] = Field("eddsa-jcs-2022")

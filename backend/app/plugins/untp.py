@@ -1,5 +1,4 @@
 import app.models.untp as untp
-from untp_models.conformity_credential import ConformityAttestation, ConformityAssessment, Regulation, Entity, Product, Facility
 
 UNTP_CONTEXTS = {
     "DigitalConformityCredential": "https://test.uncefact.org/vocabulary/untp/dcc/0.4.1/"
@@ -8,50 +7,55 @@ UNTP_CONTEXTS = {
 
 class DigitalConformityCredential:
     def __init__(self):
-        self.context = "https://test.uncefact.org/vocabulary/untp/dcc/0.4.1"
+        self.context = "https://test.uncefact.org/vocabulary/untp/dcc/0.4.2/"
         self.type = "DigitalConformityCredential"
 
-    def vc_to_dcc(self, credential_subject, credential_registration):
-        conformity_attestation = ConformityAttestation(
-            type=[],
-        )
-        credential_subject["assessments"]["type"].append("ConformityAttestation")
-        credential_subject["assessments"]["issuedToParty"]["idScheme"] = {
-            "type": ["IdentifierScheme"],
-            "id": "https://www.bcregistry.gov.bc.ca/",
-            "name": "BC Registry",
-        }
-        credential_subject["assessments"]["assessmentLevel"] = "GovtApproval"
-        credential_subject["assessments"]["attestationType"] = "Certification"
-        credential_subject["assessments"]["scope"] = {
-            "id": credential_registration["relatedResources"]["governance"]["id"],
-            "name": credential_registration["relatedResources"]["governance"]["name"],
-        }
-        for idx, assessment in enumerate(credential_subject["assessments"]):
-            credential_subject["assessments"][idx] = ConformityAssessment(
-                referenceRegulation=Regulation(
-                    id=credential_registration["relatedResources"]["legalAct"]["id"],
-                    name=credential_registration["relatedResources"]["legalAct"]["name"],
-                    jurisdictionCountry="CA",
-                    administeredBy=Entity(
-                        id="https://gov.bc.ca",
-                        name="Government of British Columbia"
-                    )
-                ),
-                compliance=True,
-                conformityTopic="Governance.Compliance",
-                assessedProducts=[
-                    Product() for product in assessment['assessedProducts']
-                ],
-                assessedFacilities=[
-                    Facility() for facility in assessment['assessedFacilities']
-                ],
+    def attestation(self, scope, regulation, products=None, facilities=None):
+        conformity_attestation = untp.ConformityAttestation(
+            assessmentLevel='GovtApproval',
+            attestationType='Certification',
+            scope = untp.ConformityAssessmentScheme(
+                id=scope['id'],
+                name=scope['name'],
+            ),
+            issuedToParty = untp.Party(
+                idScheme=untp.IdentifierScheme(
+                    id="https://www.bcregistry.gov.bc.ca/",
+                    name="BC Registry"
+                )
             )
-        return credential_subject
+        )
+        # conformity_attestation.assessment = [self.add_assessment(
+        #     regulation,
+        #     # products,
+        #     # facilities,
+        # )]
+        return conformity_attestation
 
-    def add_subject_party(self, entity_id):
-        self.credential["credentialSubject"]["issuedTo"] = {"id": entity_id}
+    # def add_subject_party(self, entity_id):
+    #     self.credential["credentialSubject"]["issuedTo"] = {"id": entity_id}
 
-    def add_assessment(self, credential, assessment):
-        credential["credentialSubject"]["assessments"] = [assessment]
-        return credential
+    def add_assessment(self, regulation=None, products=[], facilities=[]):
+        assessment = untp.ConformityAssessment(
+            compliance=True,
+            conformityTopic="Governance.Compliance",
+            referenceRegulation=untp.Regulation(
+                id=regulation["id"],
+                name=regulation["name"],
+                effectiveDate=regulation["effectiveDate"],
+                jurisdictionCountry="CA",
+                administeredBy=untp.Party(
+                    id="https://gov.bc.ca",
+                    name="Government of British Columbia"
+                )
+            )
+        )
+        for product in products:
+            assessed_product = untp.Product()
+            assessed_product.type.append(product['type'])
+            assessment.assessedProduct.append(assessed_product)
+        for facility in facilities:
+            assessed_facility = untp.Facility()
+            assessed_facility.type.append(facility['type'])
+            assessment.assessedFacility.append(assessed_facility)
+        return assessment
