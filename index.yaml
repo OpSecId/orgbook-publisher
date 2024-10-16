@@ -1,0 +1,28 @@
+apiVersion: v1
+entries:
+  orgbook-publisher:
+  - apiVersion: v2
+    appVersion: 0.0.1
+    created: "2024-10-16T19:12:12.108349684Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami/
+      version: 11.9.13
+    - name: common
+      repository: https://charts.bitnami.com/bitnami/
+      tags:
+      - bitnami-common
+      version: 2.x.x
+    description: An api server to register and manage credentials.
+    digest: 803beb2085f5ca1e2bc3cefe6ce110009f580d5540c40e6e3ee263fac9aff77c
+    maintainers:
+    - email: patrick.st-louis@opsecid.ca
+      name: PatStLouis
+      url: https://github.com/PatStLouis
+    name: orgbook-publisher
+    type: application
+    urls:
+    - https://github.com/OpSecId/orgbook-publisher/releases/download/orgbook-publisher-0.0.1/orgbook-publisher-0.0.1.tgz
+    version: 0.0.1
+generated: "2024-10-16T19:12:12.108361196Z"
