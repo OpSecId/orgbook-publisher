@@ -6,6 +6,7 @@ from fastapi import HTTPException
 class TractionController:
     
     def __init__(self):
+        self.endorser_key = settings.TDW_ENDORSER_MULTIKEY
         self.endpoint = settings.TRACTION_API_URL
         self.tenant_id = settings.TRACTION_TENANT_ID
         self.api_key = settings.TRACTION_API_KEY
@@ -14,7 +15,8 @@ class TractionController:
     def _try_response(self, response, response_key=None):
         try:
             return response.json()[response_key]
-        except:
+        except ValueError:
+            print(response.json())
             raise HTTPException(status_code=response.status_code, detail=response.json())
         
     def authorize(self):
@@ -56,6 +58,14 @@ class TractionController:
         return self._try_response(r, 'kid')
     
     def add_di_proof(self, document, options):
+        r = requests.post(f'{self.endpoint}/vc/di/add-proof', headers=self.headers, json={
+            'document': document,
+            'options': options,
+        })
+        return self._try_response(r, 'securedDocument')
+    
+    def endorse(self, document, options):
+        options['verificationMethod'] = f'did:key:{self.endorser_key}#{self.endorser_key}'
         r = requests.post(f'{self.endpoint}/vc/di/add-proof', headers=self.headers, json={
             'document': document,
             'options': options,

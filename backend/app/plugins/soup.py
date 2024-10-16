@@ -20,5 +20,5 @@ class Soup:
         return {
             'id': self.url,
             'name': title,
-            'date': date.split('current to')[-1].strip()
+            'effectiveDate': date.split('current to')[-1].strip()
         }

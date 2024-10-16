@@ -1,0 +1,93 @@
+---
+nameOverride: "orgbook-publisher"
+fullnameOverride: "orgbook-publisher"
+
+selectorLabels: {}
+
+ingress:
+  tls: false
+  labels: []
+  annotations: []
+
+networkPolicy:
+  ingress:
+    namespaceSelector: []
+
+backend:
+  image:
+    repository: ghcr.io/OpSecId/orgbook-publisher
+    tag: 0.0.1
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+  # host is required when enabling TLS in the ingress
+  # host: publisher.myapp.example
+
+  environment:
+    TRACTION_API_URL: ""
+    TRACTION_API_KEY: ""
+    TRACTION_TENANT_ID: ""
+    ORGBOOK_URL: ""
+    TDW_SERVER_URL: ""
+    TDW_ENDORSER_MULTIKEY: ""
+
+  replicaCount: 1
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  containerSecurityContext: {}
+
+  service:
+    type: ClusterIP
+    apiPort: 8000
+    servicePort: 8000
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 512Mi
+    requests:
+      cpu: 10m
+      memory: 128Mi
+
+  networkPolicy:
+    ingress:
+      podSelector: {}
+
+postgresql:
+  enabled: true
+  fullnameOverride: "orgbook-publisher-postgresql"
+  nameOverride: "orgbook-publisher-postgresql"
+  architecture: standalone
+  auth:
+    enablePostgresUser: true
+    existingSecret: ""
+    secretKeys:
+      adminPasswordKey: admin-password
+      userPasswordKey: database-password
+    username: "orgbook-publisher"
+
+  ## PostgreSQL Primary parameters
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi
+    containerSecurityContext:
+      enabled: false
+    podSecurityContext:
+      enabled: false
+    resources:
+      limits:
+        cpu: 800m
+        memory: 500Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    service:
+      ports:
+        postgresql: 5432
+    extendedConfiguration: |
+      max_connections = 500
+
+  networkPolicy:
+    ingress:
+      podSelector: {}

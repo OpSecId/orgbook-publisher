@@ -21,8 +21,8 @@ api_router = APIRouter()
 async def server_status():
     return JSONResponse(status_code=200, content={"status": "ok"})
 
-api_router.include_router(credentials.router, tags=["Credentials"])
-api_router.include_router(registrations.router, tags=["Registrations"])
+api_router.include_router(credentials.router)
+api_router.include_router(registrations.router)
 
 
 app.include_router(api_router)

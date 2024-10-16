@@ -16,6 +16,11 @@ class IssuerRegistration(BaseModel):
     )
     url: str = Field(None, example="https://www2.gov.bc.ca/gov/content/governments/organizational-structure/ministries-organizations/ministries/energy-mines-and-petroleum-resources")
     # image: str = Field(None, example="https://")
+    multikey: str = Field(None)
+
+class RelatedResource(BaseModel):
+    id: str = Field()
+    type: str = Field()
 
 class RelatedResources(BaseModel):
     context: str = Field(example="https://bcgov.github.io/digital-trust-toolkit/contexts/BCPetroleumAndNaturalGasTitle/v1.jsonld")
@@ -26,6 +31,7 @@ class RelatedResources(BaseModel):
 
 class CredentialRegistration(BaseModel):
     type: str = Field('BCPetroleumAndNaturalGasTitleCredential')
+    subjectType: str = Field('PetroleumAndNaturalGasTitle')
     untpType: str = Field(None, example='DigitalConformityCredential')
     version: str = Field(example='v1.0')
     issuer: str = Field(example=f'did:web:{settings.TDW_SERVER_URL.split("//")[-1]}:petroleum-and-natural-gas-act:director-of-petroleum-lands')

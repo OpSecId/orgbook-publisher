@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "backend.fullname" . }}
+  labels:
+    {{- include "backend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- toYaml .Values.backend.podAnnotations | nindent 8 }}
+      labels:
+        {{- include "backend.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        {{- toYaml .Values.backend.image.pullSecrets | nindent 8 }}
+      securityContext:
+        {{- toYaml .Values.backend.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "backend.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.backend.containerSecurityContext | nindent 12 }}
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "backend.fullname" . }}
+                  key: secret-key
+            - name: DOMAIN
+              value: {{ .Values.backend.host }}
+            - name: ENDORSER_MULTIKEY
+              value: {{ .Values.backend.environment.ENDORSER_MULTIKEY }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.auth.username }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.nameOverride }}
+                  key: password
+            - name: POSTGRES_SERVER_NAME
+              value: {{ include "global.postgresql.fullname" . }}
+            - name: POSTGRES_SERVER_PORT
+              value: {{ .Values.postgresql.primary.service.ports.postgresql | quote }}
+          ports:
+            - name: api
+              containerPort: {{ .Values.backend.service.apiPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /server/status
+              port: {{ .Values.backend.service.apiPort }}
+            failureThreshold: 2
+            initialDelaySeconds: 60
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /server/status
+              port: {{ .Values.backend.service.apiPort }}
+            initialDelaySeconds: 60
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+      nodeSelector:
+        {{- toYaml .Values.backend.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.backend.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.backend.tolerations | nindent 8 }}

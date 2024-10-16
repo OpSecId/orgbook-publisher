@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from config import settings
 from app.models import Credential
 from app.utilities import freeze_ressource_digest
-from app.plugins import AgentController, AskarStorage, AskarWallet
+from app.plugins import AskarStorage, AskarWallet
 from app.plugins.untp import DigitalConformityCredential
+from app.plugins.traction import TractionController
 
 # from .ips import IPSView
 import requests

@@ -10,11 +10,13 @@ class DigitalConformityCredential:
         self.context = "https://test.uncefact.org/vocabulary/untp/dcc/0.4.2/"
         self.type = "DigitalConformityCredential"
 
-    def attestation(self, credential_registration=None, products=None, facilities=None):
+    def attestation(self, scope, regulation, products=None, facilities=None):
         conformity_attestation = untp.ConformityAttestation(
+            assessmentLevel='GovtApproval',
+            attestationType='Certification',
             scope = untp.ConformityAssessmentScheme(
-                id=credential_registration["relatedResources"]["governance"],
-                name=credential_registration["relatedResources"]["governance"],
+                id=scope['id'],
+                name=scope['name'],
             ),
             issuedToParty = untp.Party(
                 idScheme=untp.IdentifierScheme(
@@ -23,11 +25,11 @@ class DigitalConformityCredential:
                 )
             )
         )
-        conformity_attestation.assessment = [self.add_assessment(
-            # credential_registration["relatedResources"]["legalAct"],
-            # products,
-            # facilities,
-        )]
+        # conformity_attestation.assessment = [self.add_assessment(
+        #     regulation,
+        #     # products,
+        #     # facilities,
+        # )]
         return conformity_attestation
 
     # def add_subject_party(self, entity_id):
@@ -37,12 +39,10 @@ class DigitalConformityCredential:
         assessment = untp.ConformityAssessment(
             compliance=True,
             conformityTopic="Governance.Compliance",
-            assessmentLevel='GovtApproval',
-            attestationType='Certification',
             referenceRegulation=untp.Regulation(
-                # id=regulation["id"],
-                # name=regulation["name"],
-                # effectiveDate=regulation["effectiveDate"],
+                id=regulation["id"],
+                name=regulation["name"],
+                effectiveDate=regulation["effectiveDate"],
                 jurisdictionCountry="CA",
                 administeredBy=untp.Party(
                     id="https://gov.bc.ca",

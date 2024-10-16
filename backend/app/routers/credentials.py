@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from fastapi.responses import JSONResponse
 from app.models.web_schemas import (
     IssueCredential,
@@ -18,9 +18,13 @@ import uuid
 from datetime import datetime, timezone, timedelta
 import json
 
-router = APIRouter()
+router = APIRouter(prefix='/credentials', tags=["Credentials"])
 
-@router.post("/credentials")
+@router.post("/forward")
+async def forward_credential(request_body: PublishCredential):
+    pass
+
+@router.post("/publish")
 async def publish_credential(request_body: PublishCredential):
     # valid_from = request_body.model_dump()['validFrom']
     # valid_until = request_body.model_dump()['validUntil']
@@ -94,7 +98,7 @@ async def publish_credential(request_body: PublishCredential):
         'options': proof_options
     })
 
-@router.post("/credentials/issue")
+@router.post("/issue")
 async def issue_credential(request_body: IssueCredential):
     credential = request_body.model_dump()["credential"]
     options = request_body.model_dump()["options"]
@@ -144,8 +148,7 @@ async def issue_credential(request_body: IssueCredential):
     proof_options = {
         "type": "DataIntegrityProof",
         "cryptosuite": "eddsa-jcs-2022",
-        "proofPurpose": "authentication",
-        # 'proofPurpose': 'assertionMethod',
+        'proofPurpose': 'assertionMethod',
         "verificationMethod": verification_method,
         "created": str(datetime.now().isoformat("T", "seconds")),
     }
@@ -157,11 +160,13 @@ async def issue_credential(request_body: IssueCredential):
 
 
 @router.get("/credentials/{credential_id}")
-async def get_credential(credential_id: str, envelope: bool = False):
-    headers = {"Content-Type": "application/ld+json"}
+async def get_credential(credential_id: str, request: Request):
     vc = await AskarStorage().fetch('credential', credential_id)
-    if envelope:
+    if 'application/vc+jwt' in request.headers:
+        headers = {"Content-Type": "application/vc+jwt"}
         vc = await AskarWallet().sign_vc_jose(vc)
+    else:
+        headers = {"Content-Type": "application/vc"}
     return JSONResponse(
         status_code=200,
         content=vc,
@@ -175,7 +180,7 @@ async def get_credential(credential_id: str, envelope: bool = False):
 
 
 @router.get("/credentials/status/{status_credential_id}")
-async def get_status_list_credential(status_credential_id: str):
+async def get_status_list_credential(status_credential_id: str, request: Request):
     status_list_credential = await AskarStorage().fetch(
         "statusListCredential", status_credential_id
     )
@@ -192,8 +197,14 @@ async def get_status_list_credential(status_credential_id: str):
         "proofValue": None,
     }
     status_list_credential["proof"] = proof
+    if 'application/vc+jwt' in request.headers:
+        headers = {"Content-Type": "application/vc+jwt"}
+        status_list_credential = await AskarWallet().sign_vc_jose(status_list_credential)
+    else:
+        headers = {"Content-Type": "application/vc"}
 
     return JSONResponse(
         status_code=200,
         content=status_list_credential,
+        headers=headers
     )

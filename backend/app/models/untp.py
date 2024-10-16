@@ -169,7 +169,7 @@ class ConformityAssessmentScheme(BaseModel):
 
 class ConformityAttestation(BaseModel):
     type: List[str] = ["ConformityAttestation"]
-    # id: str
+    id: str = None
     assessorLevel: Optional[str] = None
     assessmentLevel: str = None
     attestationType: str = None

@@ -1,7 +1,5 @@
 import requests
-import hashlib
 import base64
-import base58
 from multiformats import multibase
 
 MULTIKEY = [
