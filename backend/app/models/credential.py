@@ -138,13 +138,13 @@ class Credential(BaseModel):
         assert valid_datetime_string(value)
         return value
 
-    @field_validator("credentialSubject")
-    @classmethod
-    def validate_credential_subject(cls, value):
-        asserted_value = value if isinstance(value, list) else [value]
-        for subject in asserted_value:
-            assert bool(subject.model_dump())
-        return value
+    # @field_validator("credentialSubject")
+    # @classmethod
+    # def validate_credential_subject(cls, value):
+    #     asserted_value = value if isinstance(value, list) else [value]
+    #     for subject in asserted_value:
+    #         assert bool(subject.model_dump())
+    #     return value
 
     @field_validator("relatedResource")
     @classmethod
