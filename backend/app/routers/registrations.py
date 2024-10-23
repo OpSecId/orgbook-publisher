@@ -27,11 +27,13 @@ async def register_issuer(
         registration["description"],
         registration["multikey"],
     )
-    return JSONResponse(status_code=201, content={
+    return JSONResponse(status_code=201, content=did_document)
+    issuer = {
         "id": did_document["id"],
         "name": registration["name"],
         "scope": registration["scope"],
-    })
+    }
+    return JSONResponse(status_code=201, content=issuer)
 
 
 @router.post("/credentials")
