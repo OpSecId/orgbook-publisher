@@ -131,14 +131,15 @@ class PublisherRegistrar:
 
     async def template_credential(self, credential_registration):
         issuer = await AskarStorage().fetch("issuer", credential_registration["issuer"])
-        issuer = Issuer(
-            id=issuer["id"],
-            name=issuer["name"],
-            description=issuer["description"],
-        )
 
         # Initialize VC
-        credential = Credential()
+        credential = Credential(
+            issuer=Issuer(
+                id=issuer["id"],
+                name=issuer["name"],
+                description=issuer["description"],
+            )
+        )
 
         # UNTP context & type
         if "untpType" in credential_registration:
