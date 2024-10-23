@@ -138,17 +138,18 @@ class PublisherRegistrar:
         )
 
         # W3C context & type
-        contexts = ["https://www.w3.org/ns/credentials/v2"]
-        types = ["VerifiableCredential"]
+        credential = Credential(
+            credentialSubject={
+                "type": credential_registration["subjectType"]
+            }
+        )
 
         # UNTP context & type
         if "untpType" in credential_registration:
-            credential_subject = {}
-
             # DigitalConformityCredential templating
             if credential_registration["untpType"] == "DigitalConformityCredential":
-                contexts.append(DigitalConformityCredential().context)
-                types.append(credential_registration["untpType"])
+                credential.context.append(DigitalConformityCredential().context)
+                credential.type.append(credential_registration["untpType"])
 
                 legal_act_info = Soup(
                     credential_registration["relatedResources"]["legalAct"]
@@ -159,8 +160,8 @@ class PublisherRegistrar:
                     "effectiveDate": legal_act_info["effectiveDate"],
                 }
 
-                credential_subject = (
-                    credential_subject
+                credential.credentialSubject = (
+                    credential.credentialSubject
                     | untp.ConformityAttestation(
                         assessmentLevel="GovtApproval",
                         attestationType="Certification",
@@ -196,16 +197,10 @@ class PublisherRegistrar:
                 )
 
         # BCGov context & type
-        contexts.append(credential_registration["relatedResources"]["context"])
-        types.append(credential_registration["type"])
-        credential_subject["type"].append(credential_registration["subjectType"])
+        credential.context.append(credential_registration["relatedResources"]["context"])
+        credential.type.append(credential_registration["type"])
 
-        return Credential(
-            context=contexts,
-            type=types,
-            issuer=issuer,
-            credentialSubject=credential_subject,
-        ).model_dump()
+        return credential.model_dump()
 
     async def register_credential(self, credential_registration):
         return await self.template_credential(credential_registration)

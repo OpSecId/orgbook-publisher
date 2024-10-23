@@ -86,8 +86,8 @@ class RenderMethod(BaseModel):
 
 
 class Credential(BaseModel):
-    context: List[str] = Field(alias="@context")
-    type: Union[str, List[str]] = Field()
+    context: List[str] = Field(["https://www.w3.org/ns/credentials/v2"], alias="@context")
+    type: Union[str, List[str]] = Field("VerifiableCredential")
     validFrom: SkipJsonSchema[str] = Field(None)
     validUntil: SkipJsonSchema[str] = Field(None)
     credentialSubject: Union[List[CredentialSubject], CredentialSubject] = Field()
