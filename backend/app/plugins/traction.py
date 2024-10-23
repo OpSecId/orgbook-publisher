@@ -101,7 +101,7 @@ class TractionController:
         )
         return self._try_response(r, "kid")
 
-    async def sign_vc_jwt(self, document):
+    def sign_vc_jwt(self, document):
         did = document["issuer"]["id"]
         verification_method = f"{did}#{self.default_kid}-jwk"
         r = requests.post(

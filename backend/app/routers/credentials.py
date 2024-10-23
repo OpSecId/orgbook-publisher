@@ -77,7 +77,8 @@ async def publish_credential(request_body: PublishCredential):
     }
 
     await AskarStorage().store("credential", credential_id, vc, tags=tags)
-    await OrgbookPublisher().forward_credential(vc, credential_registration)
+    forwarded_payload = await OrgbookPublisher().forward_credential(vc, credential_registration)
+    return JSONResponse(status_code=201, content=forwarded_payload)
     return JSONResponse(status_code=201, content={"credentialId": credential_id})
 
 
@@ -145,10 +146,12 @@ async def issue_credential(request_body: IssueCredential):
 @router.get("/{credential_id}")
 async def get_credential(credential_id: str, request: Request):
     vc = await AskarStorage().fetch("credential", credential_id)
+    traction = TractionController()
+    traction.authorize()
     if "application/vc+jwt" in request.headers["accept"]:
         return JSONResponse(
             headers={"Content-Type": "application/vc+jwt"},
-            content=await TractionController().sign_vc_jwt(vc),
+            content=traction.sign_vc_jwt(vc),
         )
     elif "application/vc" in request.headers["accept"]:
         return JSONResponse(headers={"Content-Type": "application/vc"}, content=vc)

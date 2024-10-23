@@ -142,6 +142,7 @@ class OrgbookPublisher:
                 "credentialId": vc["id"],
             },
         }
+        return payload
         r = requests.post(f"{self.vc_service}/credentials", json=payload)
         try:
             return r.json()
