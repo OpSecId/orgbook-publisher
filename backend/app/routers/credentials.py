@@ -78,7 +78,7 @@ async def publish_credential(request_body: PublishCredential):
 
     await AskarStorage().store("credential", credential_id, vc, tags=tags)
     forwarded_payload = await OrgbookPublisher().forward_credential(vc, credential_registration)
-    return JSONResponse(status_code=201, content=forwarded_payload)
+    return JSONResponse(status_code=201, content=vc)
     return JSONResponse(status_code=201, content={"credentialId": credential_id})
 
 
