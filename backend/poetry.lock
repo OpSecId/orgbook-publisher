@@ -703,6 +703,22 @@ toml = ["tomli (>=2.0.1)"]
 yaml = ["pyyaml (>=6.0.1)"]
 
 [[package]]
+name = "pystache"
+version = "0.6.5"
+description = "Mustache for Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pystache-0.6.5-py3-none-any.whl", hash = "sha256:84546278219431f1a2ecc86a627cc1b0fe3c83b5612f8a7d9c81ea0119ac8f49"},
+    {file = "pystache-0.6.5.tar.gz", hash = "sha256:9f238d5a06f18843e0d491d8e4e292dc03fed6a54cb0a5c34be37a3faa973174"},
+]
+
+[package.extras]
+cov = ["coverage", "coverage-python-version"]
+doc = ["recommonmark", "sphinx", "sphinx-git", "sphinx-rtd-theme", "sphinxcontrib-apidoc"]
+test = ["pytest", "pytest-cov"]
+
+[[package]]
 name = "python-dotenv"
 version = "1.0.1"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -853,4 +869,4 @@ crypto-eth-addresses = ["eth-hash[pycryptodome] (>=0.7.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "193fbac2baba9bb3fc4e4841686744b107e205117753fd8efd14f589b7a57aa5"
+content-hash = "583c59396d4ec8964fd96aadfd91c048f38af036cfeb538cd2f8d7353aebcd99"
