@@ -22,7 +22,7 @@ class OrgbookPublisher:
 
     def fetch_buisness_info(self, identifier):
         r = requests.get(
-            f"{settings.ORGBOOK_API_URL}/search/topic?q=A0131571&inactive=false&revoked=false"
+            f"{settings.ORGBOOK_API_URL}/search/topic?q={identifier}&inactive=false&revoked=false"
         )
         buisness_info = r.json()["results"][0]
         return {
@@ -79,14 +79,11 @@ class OrgbookPublisher:
         vc = traction.issue_vc(credential)
         self.forward_credential(vc, credential_registration)
 
-    async def format_credential(self, data, credential_id, credential_type):
+    async def format_credential(self, data, credential_registration, credential_id):
         entity = self.fetch_buisness_info(data["core"]["entityId"])
         try:
-            credential_registration = await AskarStorage().fetch(
-                "credentialRegistration", credential_type
-            )
             credential_template = await AskarStorage().fetch(
-                "credentialTemplate", credential_type
+                "credentialTemplate", credential_registration['type']
             )
         except:
             raise HTTPException(status_code=404, detail="Unknown credential type.")

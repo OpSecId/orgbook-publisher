@@ -24,4 +24,4 @@ class Soup:
             "T", "seconds"
         )
         title = self.soup.find("div", {"id": "title"}).find("h2").get_text()
-        return {"id": self.url, "name": title, "effectiveDate": datetime_str + "Z"}
+        return {"id": self.url, "title": title, "effectiveDate": datetime_str + "Z"}

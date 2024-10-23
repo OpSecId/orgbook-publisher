@@ -31,14 +31,20 @@ async def forward_credential(request_body: PublishCredential):
 @router.post("/publish")
 async def publish_credential(request_body: PublishCredential):
     credential_type = request_body.model_dump()["type"]
+    try:
+        credential_registration = await AskarStorage().fetch(
+            "credentialRegistration", credential_type
+        )
+    except:
+        raise HTTPException(status_code=404, detail="Unknown credential type.")
     data = {
         "core": request_body.model_dump()["coreData"],
         "subject": request_body.model_dump()["subjectData"],
         "untp": request_body.model_dump()["untpData"],
     }
     credential_id = str(uuid.uuid4())
-    credential = OrgbookPublisher().format_credential(
-        data, credential_id, credential_type
+    credential = await OrgbookPublisher().format_credential(
+        data, credential_registration, credential_id
     )
     traction = TractionController()
     traction.authorize()
@@ -52,7 +58,7 @@ async def publish_credential(request_body: PublishCredential):
     }
 
     await AskarStorage().store("credential", credential_id, vc, tags=tags)
-
+    # await OrgbookPublisher().forward_credential(vc, credential_registration)
     return JSONResponse(status_code=201, content={"credentialId": credential_id})
 
 
