@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from app.models.web_schemas import (
     IssueCredential,
     PublishCredential,
+    ForwardCredential,
 )
 from config import settings
 from app.utilities import timestamp
@@ -24,8 +25,26 @@ router = APIRouter(prefix="/credentials", tags=["Credentials"])
 
 
 @router.post("/forward")
-async def forward_credential(request_body: PublishCredential):
-    pass
+async def forward_credential(request_body: ForwardCredential):
+    vc = request_body.model_dump()["verifiableCredential"]
+    options = request_body.model_dump()["verifiableCredential"]
+    try:
+        credential_registration = await AskarStorage().fetch(
+            "credentialRegistration", options['credentialType']
+        )
+    except:
+        raise HTTPException(status_code=404, detail="Unknown credential type.")
+
+    tags = {
+        "entityId": options["entityId"],
+        "resourceId": options["resourceId"],
+        "revoked": "0",
+        "updated": "0",
+    }
+
+    await AskarStorage().store("credential", options["credentialId"], vc, tags=tags)
+    # await OrgbookPublisher().forward_credential(vc, credential_registration)
+    return JSONResponse(status_code=201, content={"credentialId": options["credentialId"]})
 
 
 @router.post("/publish")

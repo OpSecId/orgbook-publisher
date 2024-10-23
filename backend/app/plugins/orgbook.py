@@ -32,7 +32,7 @@ class OrgbookPublisher:
         }
 
     async def create_credential_type(self, credential_registration):
-        issuer = ["issuer"]
+        issuer = credential_registration["issuer"]
         verification_method = f"{issuer}#key-01-multikey"
         credential_type = {
             "format": "vc_di",
@@ -55,14 +55,12 @@ class OrgbookPublisher:
         proof_options = {
             "type": "DataIntegrityProof",
             "cryptosuite": "eddsa-jcs-2022",
-            # "proofPurpose": "authentication",
             "proofPurpose": "assertionMethod",
             "verificationMethod": verification_method,
         }
         traction = TractionController()
         traction.authorize()
         signed_vc_type = traction.add_di_proof(credential_type, proof_options)
-        # options = {"issuerId": credential_registration["issuer"]}
         request_body = {"securedDocument": signed_vc_type}
 
         r = requests.post(f"{self.vc_service}/credential-types", json=request_body)
