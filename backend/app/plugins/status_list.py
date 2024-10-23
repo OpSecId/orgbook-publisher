@@ -72,7 +72,7 @@ class BitstringStatusList:
     async def create_entry(self, status_list_id, purpose="revocation"):
         # https://www.w3.org/TR/vc-bitstring-status-list/#example-example-statuslistcredential
         storage = AskarStorage()
-        status_index = self.find_index(status_list_id)
+        status_index = await self.find_index(status_list_id)
 
         status_credential = await storage.fetch("statusListCredential", status_list_id)
         credential_status_id = status_credential["id"]
