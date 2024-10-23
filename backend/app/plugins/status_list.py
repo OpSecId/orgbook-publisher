@@ -31,20 +31,20 @@ class BitstringStatusList:
     async def create(self, credential_registration):
         # https://www.w3.org/TR/vc-bitstring-status-list/#example-example-bitstringstatuslistcredential
         # status_list_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, self.did_key))
-        id_string = credential_registration["type"] + credential_registration["version"]
-        status_list_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, id_string))
-        # status_list_id = str(uuid.uuid4())
+        # id_string = credential_registration["type"] + credential_registration["version"]
+        # status_list_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, id_string))
+        status_list_id = str(uuid.uuid4())
         status_list_credential = {
             "@context": [
                 "https://www.w3.org/ns/credentials/v2",
             ],
             "type": ["VerifiableCredential", "BitstringStatusListCredential"],
             "id": f"https://{settings.DOMAIN}/credentials/status/{status_list_id}",
-            "issuer": credential_registration["issuer"],
+            "issuer": {"id": credential_registration["issuer"]},
             "credentialSubject": {
                 "type": "BitstringStatusList",
                 "encodedList": self.generate(str(0) * self.lenght),
-                "statusPurpose": ["revocation", "suspension"],
+                "statusPurpose": ["revocation", "suspension", "update"],
             },
         }
         try:
@@ -56,20 +56,20 @@ class BitstringStatusList:
             )
         except:
             pass
-        return status_list_credential["id"]
+        return status_list_id
 
-    async def create_entry(self, purpose="revocation"):
+    async def create_entry(self, status_list_id, purpose="revocation"):
         # https://www.w3.org/TR/vc-bitstring-status-list/#example-example-statuslistcredential
         storage = AskarStorage()
-        status_entries = await storage.fetch("statusListEntries")
+        status_entries = await storage.fetch("statusListEntries", status_list_id)
         # Find an unoccupied index
         status_index = random.choice(
             [e for e in range(self.lenght - 1) if e not in status_entries]
         )
         status_entries.append(status_index)
-        await storage.update("statusListEntries", status_entries)
-        status_credential = await storage.fetch("statusListCredential")
+        await storage.update("statusListEntries", status_list_id, status_entries)
 
+        status_credential = await storage.fetch("statusListCredential", status_list_id)
         credential_status_id = status_credential["id"]
         credential_status_entry = {
             "id": f"{credential_status_id}#{status_index}",

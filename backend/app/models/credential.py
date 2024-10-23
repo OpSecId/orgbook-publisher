@@ -5,24 +5,29 @@ from config import settings
 from app.utils import valid_datetime_string, valid_uri
 
 
-class NameField(BaseModel, extra='forbid'):
+class NameField(BaseModel, extra="forbid"):
     value: str = Field(None, alias="@value")
     language: str = Field(None, alias="@language")
     direction: str = Field(None, alias="@direction")
 
 
-class DescriptionField(BaseModel, extra='forbid'):
+class DescriptionField(BaseModel, extra="forbid"):
     value: str = Field(None, alias="@value")
     language: str = Field(None, alias="@language")
     direction: str = Field(None, alias="@direction")
 
-class BaseModel(BaseModel, extra='allow'):
+
+class BaseModel(BaseModel, extra="allow"):
     id: SkipJsonSchema[str] = Field(None)
     type: Union[str, List[str]] = Field(None)
     name: SkipJsonSchema[Union[str, NameField, List[NameField]]] = Field(None)
-    description: SkipJsonSchema[Union[str, DescriptionField, List[DescriptionField]]] = Field(None)
+    description: SkipJsonSchema[
+        Union[str, DescriptionField, List[DescriptionField]]
+    ] = Field(None)
+
     def model_dump(self, **kwargs) -> Dict[str, Any]:
         return super().model_dump(by_alias=True, exclude_none=True, **kwargs)
+
 
 class Issuer(BaseModel):
     pass
@@ -60,7 +65,7 @@ class CredentialStatus(BaseModel):
     def validate_credential_status_id(cls, value):
         if value:
             assert valid_uri(value)
-            
+
         return value
 
 
@@ -85,13 +90,21 @@ class Credential(BaseModel):
     validFrom: SkipJsonSchema[str] = Field(None)
     validUntil: SkipJsonSchema[str] = Field(None)
     credentialSubject: Union[List[CredentialSubject], CredentialSubject] = Field()
-    credentialStatus:  SkipJsonSchema[Union[List[CredentialStatus], CredentialStatus]] = Field(None)
-    credentialSchema: SkipJsonSchema[Union[List[CredentialSchema], CredentialSchema]] = Field(None)
+    credentialStatus: SkipJsonSchema[
+        Union[List[CredentialStatus], CredentialStatus]
+    ] = Field(None)
+    credentialSchema: SkipJsonSchema[
+        Union[List[CredentialSchema], CredentialSchema]
+    ] = Field(None)
     termsOfUse: SkipJsonSchema[Union[List[TermsOfUse], TermsOfUse]] = Field(None)
-    refreshService: SkipJsonSchema[Union[List[RefreshService], RefreshService]] = Field(None)
+    refreshService: SkipJsonSchema[Union[List[RefreshService], RefreshService]] = Field(
+        None
+    )
     evidence: SkipJsonSchema[Union[List[Evidence], Evidence]] = Field(None)
     renderMethod: SkipJsonSchema[Union[List[RenderMethod], RenderMethod]] = Field(None)
-    relatedResource: SkipJsonSchema[Union[List[RelatedResource], RelatedResource]] = Field(None)
+    relatedResource: SkipJsonSchema[Union[List[RelatedResource], RelatedResource]] = (
+        Field(None)
+    )
 
     @field_validator("id")
     @classmethod

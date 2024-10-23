@@ -1,0 +1,63 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>OCA Rendering</title>
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <link href="https://preview.tabler.io/dist/css/tabler.min.css" rel="stylesheet">
+</head>
+
+<body class=" d-flex flex-column">
+    <div class="page page-center">
+        <div class="container container py-4">
+            <div class="text-center mb-4">
+            </div>
+            <div class="card card-md">
+                {# <div class="card-body">
+                </div> #}
+                
+                <div class="card-body">
+                    <a class="card-link" href="#">
+                        <div class="row">
+                            <div class="col-auto">
+                                <span class="avatar avatar-xl rounded"
+                                    style="background-image: url({{issuer.image}})"></span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">{{issuer.name}}</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="card-body">
+                        <div class="row">
+                            <div class="col-auto">
+                                <center>
+                                    <!-- {{ qrcode.svg_inline(scale=3) | safe }} -->
+                                    <!-- <div class="badges-list centered">
+                                        <span class="badge badge-outline">VC</span>
+                                        <span class="badge badge-outline">JWT</span>
+                                    </div> -->
+                                </center>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">{{credential.name}}</div>
+                            </div>
+                        </div>
+                    {{#groupings}}
+                    <div class="hr-text">{{grouping}}</div>
+                    <dl class="row">
+                        {{#groupings[grouping]}}
+                        <dt class="col-6">{{.}}</dt>
+                        <dd class="col-6">{{groupings[grouping][.]}}</dd>
+                        {{/groupings[grouping]}}
+                    </dl>
+                    {{/groupings}}
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://preview.tabler.io/dist/js/tabler.min.js"></script>
+</body>
+
+</html>

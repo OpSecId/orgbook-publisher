@@ -5,6 +5,7 @@ from .status_list import BitstringStatusList
 from .registrar import PublisherRegistrar
 from .traction import TractionController
 from .soup import Soup
+from .oca import OCAReader
 
 __all__ = [
     "AskarVerifier",
@@ -12,6 +13,7 @@ __all__ = [
     "AskarWallet",
     "OrgbookPublisher",
     "BitstringStatusList",
+    "OCAReader",
     "PublisherRegistrar",
     "Soup",
     "TractionController",

@@ -1,29 +1,28 @@
 import app.models.untp as untp
 
 UNTP_CONTEXTS = {
-    "DigitalConformityCredential": "https://test.uncefact.org/vocabulary/untp/dcc/0.4.1/"
+    "DigitalConformityCredential": "https://test.uncefact.org/vocabulary/untp/dcc/0.5.0/"
 }
 
 
 class DigitalConformityCredential:
     def __init__(self):
-        self.context = "https://test.uncefact.org/vocabulary/untp/dcc/0.4.2/"
+        self.context = "https://test.uncefact.org/vocabulary/untp/dcc/0.5.0/"
         self.type = "DigitalConformityCredential"
 
     def attestation(self, scope, regulation, products=None, facilities=None):
         conformity_attestation = untp.ConformityAttestation(
-            assessmentLevel='GovtApproval',
-            attestationType='Certification',
-            scope = untp.ConformityAssessmentScheme(
-                id=scope['id'],
-                name=scope['name'],
+            assessmentLevel="GovtApproval",
+            attestationType="Certification",
+            scope=untp.ConformityAssessmentScheme(
+                id=scope["id"],
+                name=scope["name"],
             ),
-            issuedToParty = untp.Party(
+            issuedToParty=untp.Party(
                 idScheme=untp.IdentifierScheme(
-                    id="https://www.bcregistry.gov.bc.ca/",
-                    name="BC Registry"
+                    id="https://www.bcregistry.gov.bc.ca/", name="BC Registry"
                 )
-            )
+            ),
         )
         # conformity_attestation.assessment = [self.add_assessment(
         #     regulation,
@@ -45,17 +44,16 @@ class DigitalConformityCredential:
                 effectiveDate=regulation["effectiveDate"],
                 jurisdictionCountry="CA",
                 administeredBy=untp.Party(
-                    id="https://gov.bc.ca",
-                    name="Government of British Columbia"
-                )
-            )
+                    id="https://gov.bc.ca", name="Government of British Columbia"
+                ),
+            ),
         )
         for product in products:
             assessed_product = untp.Product()
-            assessed_product.type.append(product['type'])
+            assessed_product.type.append(product["type"])
             assessment.assessedProduct.append(assessed_product)
         for facility in facilities:
             assessed_facility = untp.Facility()
-            assessed_facility.type.append(facility['type'])
+            assessed_facility.type.append(facility["type"])
             assessment.assessedFacility.append(assessed_facility)
         return assessment

@@ -1,23 +1,24 @@
 from pyld import jsonld
 import json
 
-CONTEXT_DIR = 'app/contexts/'
+CONTEXT_DIR = "app/contexts/"
 
 CACHED_CONTEXTS = {
-    'https://test.uncefact.org/vocabulary/untp/dcc/0.4.2/': 'untp_dcc_0.4.2',
-    'https://www.w3.org/ns/credentials/v2': 'credentials_v2',
-    'https://www.w3.org/ns/credentials/examples/v2': 'credentials_examples_v2'
+    "https://test.uncefact.org/vocabulary/untp/dcc/0.4.2/": "untp_dcc_0.4.2",
+    "https://www.w3.org/ns/credentials/v2": "credentials_v2",
+    "https://www.w3.org/ns/credentials/examples/v2": "credentials_examples_v2",
 }
+
 
 class LinkedData:
     def __init__(self):
         pass
-    
+
     def load_cached_ctx(self, context_url):
-        with open(f'{CONTEXT_DIR}{CACHED_CONTEXTS[context_url]}.jsonld', 'r') as f:
+        with open(f"{CONTEXT_DIR}{CACHED_CONTEXTS[context_url]}.jsonld", "r") as f:
             context = json.loads(f.read())
         return context
-        
+
     def is_valid_context(self, context):
         if isinstance(context, list):
             for idx, ctx_entry in enumerate(context):

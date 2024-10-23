@@ -3,9 +3,9 @@ from fastapi import HTTPException
 from aries_askar import Store, error, Key, KeyAlg
 from aries_askar.bindings import LocalKeyHandle
 from config import settings
-from app.utilities import create_did_doc
 import hashlib
 import uuid
+import httpx
 from datetime import datetime, timezone, timedelta
 from hashlib import sha256
 import secrets
@@ -24,18 +24,11 @@ class AskarWallet:
             hashlib.md5(settings.DOMAIN.encode()).hexdigest()
         )
 
-    async def provision(self, recreate=False):
-        print(f'Initializaing database: {self.db}')
-        # await Store.provision(self.db, "raw", self.store_key, recreate=recreate)
-
-        # Register the endorser
-        # await self.create_key(kid=None, seed=None)
-
-        # Register the issuers
-        # for issuer in settings.ISSUERS:
-        #     await self.create_key(kid=issuer["id"], seed=None)
-
-            # TODO create status list
+    def resolve_did_web(self, did):
+        r = httpx.get(
+            "https://" + did.lstrip("did:web:").replace(":", "/") + "/did.json"
+        )
+        return r.json()
 
     def multikey_to_jwk(self, multikey):
         return multikey
@@ -111,7 +104,7 @@ class AskarWallet:
         issuer = vc["issuer"]["id"]
         headers = {
             "alg": "EdDSA",
-            "kid": f"{issuer}#jwk-01",
+            "kid": f"{issuer}#key-01-jwk",
             "typ": "vc+ld+json",
             "cty": "vc+ld+json",
         }
@@ -141,12 +134,31 @@ class AskarStorage:
         )
 
     async def provision(self, recreate=False):
+        settings.LOGGER.info("Initializaing database")
+        settings.LOGGER.info(self.db)
         await Store.provision(self.db, "raw", self.key, recreate=recreate)
-        issuer_registrations = {"issuers": []}
-        try:
-            await self.store("registration", "issuers", issuer_registrations)
-        except:
-            pass
+
+        settings.LOGGER.info("Caching issuer registry")
+        r = httpx.get(settings.ISSUER_REGISTRY_URL)
+        issuers = r.json()["issuers"]
+        for issuer in issuers:
+            settings.LOGGER.info(issuer["name"])
+            did_document = AskarWallet().resolve_did_web(issuer["id"])
+
+            try:
+                await self.store("issuer", did_document["id"], did_document)
+            except:
+                pass
+
+            try:
+                authorized_key = did_document["verificationMethod"][0][
+                    "publicKeyMultibase"
+                ]
+                await AskarStorage().store(
+                    "authorizedKey", did_document["id"], authorized_key
+                )
+            except:
+                pass
 
     async def open(self):
         return await Store.open(self.db, "raw", self.key)
@@ -169,18 +181,18 @@ class AskarStorage:
             except:
                 raise HTTPException(status_code=400, detail="Couldn't replace record.")
 
-    async def store(self, category, data_key, data):
+    async def store(self, category, data_key, data, tags={}):
         store = await self.open()
-        try:
-            async with store.session() as session:
-                await session.insert(
-                    category,
-                    data_key,
-                    json.dumps(data),
-                    {"~plaintag": "a", "enctag": "b"},
-                )
-        except:
-            raise HTTPException(status_code=400, detail="Couldn't store record.")
+        # try:
+        async with store.session() as session:
+            await session.insert(
+                category,
+                data_key,
+                json.dumps(data),
+                tags,
+            )
+        # except:
+        #     raise HTTPException(status_code=400, detail="Couldn't store record.")
 
     async def update(self, category, data_key, data):
         store = await self.open()

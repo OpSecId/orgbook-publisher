@@ -1,4 +1,4 @@
-from typing import Union, List, Dict, Any
+from typing import Union, List, Dict, Any, Optional
 from pydantic import BaseModel, Field, AliasChoices, field_validator
 
 # from .did_document import DidDocument
@@ -26,38 +26,107 @@ class IssueCredential(BaseModel):
 
 
 example_subject = {
-    'type': 'Petroleum&NaturalGasTitle',
-    'products': [],
-    'facilities': [],
+    "type": "Petroleum&NaturalGasTitle",
+    "products": [],
+    "facilities": [],
 }
 
 example_data = {
-    'titleType': '',
-    'titleNumber': '',
-    'titleHolder': '',
-    'originType': '',
-    'originNumber': '',
-    'caveats': [],
-    'tracts': [],
-    'wells': [],
+    "titleType": "",
+    "titleNumber": "",
+    "titleHolder": "",
+    "originType": "",
+    "originNumber": "",
+    "caveats": [],
+    "tracts": [],
+    "wells": [],
 }
 
 with open("app/data/PetroleumAndNaturalGasTitle.json") as f:
     EXAMPLE_CREDENTIAL_DATA = json.loads(f.read(), object_pairs_hook=OrderedDict)
 
-class DataToPublish(BaseModel):
-    pass
-
 # class CredentialToPublish(BaseModel):
 #     credentialSubject: dict = Field(example=example_subject)
 
+
 class PublishingOptions(BaseModel):
-    validFrom: str = Field(None, example='2024-01-01T00:00:00Z')
-    validUntil: str = Field(None, example='2025-01-01T00:00:00Z')
-    entityId: str = Field(example='A0131571')
+    validFrom: str = Field(None, example="2024-01-01T00:00:00Z")
+    validUntil: str = Field(None, example="2025-01-01T00:00:00Z")
+    entityId: str = Field(example="A0131571")
     credentialType: str = Field(example="BCPetroleumAndNaturalGasTitleCredential")
 
+
+class CoreData(BaseModel):
+    entityId: str = Field(example="A0131571")
+    resourceId: str = Field(example="62715")
+    validFrom: str = Field(None, example="2024-06-01T00:00:00Z")
+    validUntil: str = Field(None, example="2025-06-01T00:00:00Z")
+
+
+class SubjectData(
+    BaseModel,
+):
+    pass
+
+
+facility_example = {
+    "type": ["Facility", "Well"],
+    "name": "PACCAN Well",
+    "registeredId": "100010408718W603",
+    "idScheme": {
+        "id": "https://www.bc-er.ca/files/application-manuals/Oil-and-Gas-Activity-Application-Manual/Supporting-Documents/uniquewellidentifierformat.pdf",
+        "name": "Unique Well Identifier Format (UWI)",
+    },
+}
+product_example = {
+    "type": ["Product", "Tract"],
+    "name": "Natural Gas",
+    "description": [],
+    "rights": ["Included: "],
+    "locations": [],
+    "registeredId": "2711",
+    "idScheme": {
+        "id": "https://www.wcoomd.org/en/topics/nomenclature/overview/what-is-the-harmonized-system.aspx",
+        "name": "Harmonized System Codes (HS)",
+    },
+}
+
+
+class UntpData(BaseModel):
+    assessedProduct: List[dict] = Field(example=[product_example])
+    assessedFacility: List[dict] = Field(example=[facility_example])
+
+
+subject_example = {
+    "area": "2046",
+    "caveats": [
+        "PARCEL LOCATED WITHIN TREATY 8; CONSULTATION MAY BE REQUESTED BY A TREATY 8 FIRST NATION.",
+        "MAY BE REQUIRED TO COORDINATE ACCESS WITH OTHER OPERATORS AND USERS.",
+        "POTENTIAL FOR ARCHAEOLOGICAL RESOURCES EXISTS; OVERVIEW ASSESSMENT MAY BE REQUIRED.",
+        "SEASONAL ACCESS RESTRICTIONS MAY APPLY.",
+        "POTENTIAL FOR ARCHAEOLOGICAL RESOURCES EXISTS; ARCHAEOLOGICAL IMPACT ASSESSMENT MAY BE REQUIRED.",
+    ],
+    "interest": "100.00",
+    "titleType": "NaturalGas",
+    "titleNumber": "62715",
+    "titleHolder": "PACIFIC CANBRIAM ENERGY LIMITED",
+    "originType": "DrillingLicense",
+    "originNumber": "60646",
+}
+
+
 class PublishCredential(BaseModel):
-    data: DataToPublish = Field(example=EXAMPLE_CREDENTIAL_DATA)
-    # credential: CredentialToPublish = Field()
-    options: PublishingOptions = Field()
+    type: str = Field(example="BCPetroleumAndNaturalGasTitleCredential")
+    coreData: CoreData = Field()
+    subjectData: dict = Field(example=subject_example)
+    untpData: UntpData = Field(None)
+    
+class ForwardingOptions(BaseModel):
+    entityId: str = Field()
+    resourceId: str = Field()
+    credentialId: str = Field()
+    credentialType: str = Field()
+
+class ForwardCredential(BaseModel):
+    credential: Credential = Field()
+    options: ForwardingOptions = Field()

@@ -50,11 +50,10 @@ class DigitalConformityCredential:
                 name=credential_registration["relatedResources"]["legalAct"]["name"],
                 jurisdictionCountry="CA",
                 administeredBy=Entity(
-                    id="https://gov.bc.ca",
-                    name="Government of British Columbia"
-                )
+                    id="https://gov.bc.ca", name="Government of British Columbia"
+                ),
             )
-            
+
             credential_subject["assessments"][idx]["compliance"] = True
             credential_subject["assessments"][idx]["conformityTopic"] = (
                 "Governance.Compliance"

@@ -1,5 +1,7 @@
 from pydantic_settings import BaseSettings
 import os
+import logging
+from logging import Logger
 from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -9,6 +11,11 @@ load_dotenv(os.path.join(basedir, ".env"))
 class Settings(BaseSettings):
     PROJECT_TITLE: str = "Orgbook Publisher"
     PROJECT_VERSION: str = "v0"
+
+    LOG_LEVEL: int = logging.INFO
+    LOG_FORMAT: str = "%(asctime)s | %(levelname)-8s | %(module)s:%(funcName)s:%(lineno)d | %(message)s"
+    LOGGER: Logger = logging.getLogger(__name__)
+    logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
 
     DOMAIN: str = os.environ["DOMAIN"]
 
@@ -22,6 +29,8 @@ class Settings(BaseSettings):
 
     TDW_SERVER_URL: str = os.environ["TDW_SERVER_URL"]
     TDW_ENDORSER_MULTIKEY: str = os.environ["TDW_ENDORSER_MULTIKEY"]
+
+    ISSUER_REGISTRY_URL: str = os.environ["ISSUER_REGISTRY_URL"]
 
     # AGENT_ADMIN_URL: str = os.environ["AGENT_ADMIN_URL"]
     # AGENT_ADMIN_API_KEY: str = TRACTION_API_KEY

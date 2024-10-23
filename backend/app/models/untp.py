@@ -9,32 +9,31 @@ class BaseModel(BaseModel):
     id: str = None
     name: str = None
     description: str = None
-    
+
     def model_dump(self, **kwargs) -> Dict[str, Any]:
         return super().model_dump(by_alias=True, exclude_none=True, **kwargs)
 
 
-
 class IdentifierScheme(BaseModel):
     type: List[str] = ["IdentifierScheme"]
-    
+
+
 class Identifier(BaseModel):
     type: List[str] = ["Identifier"]
-    
+
     registeredId: str
     idScheme: IdentifierScheme
 
 
 class Party(BaseModel):
     type: List[str] = ["Party"]
-    
+
     registeredId: Optional[str] = None
     idScheme: Optional[IdentifierScheme] = None
     registrationCountry: Optional[IdentifierScheme] = None
     organisationWebsite: Optional[IdentifierScheme] = None
     industryCategory: Optional[IdentifierScheme] = None
     otherIdentifier: Optional[Identifier] = None
-
 
 
 class BinaryFile(BaseModel):
@@ -46,7 +45,7 @@ class BinaryFile(BaseModel):
 
 
 class Link(BaseModel):
-    type: List[str]  = ["Link"]
+    type: List[str] = ["Link"]
 
     linkURL: AnyUrl
     linkName: str
@@ -65,7 +64,7 @@ class SecureLink(BaseModel):
 
 
 class Measure(BaseModel):
-    type: List[str]  = ["Measure"]
+    type: List[str] = ["Measure"]
 
     value: float
     unit: str = Field(
@@ -134,7 +133,7 @@ class Facility(BaseModel):
 class Product(BaseModel):
     type: List[str] = ["Product"]
 
-    id: AnyUrl = None # The globally unique ID of the Party as a resolvable URL according to ISO 18975.
+    id: AnyUrl = None  # The globally unique ID of the Party as a resolvable URL according to ISO 18975.
     name: str = None
     registeredId: Optional[str] = None
     idScheme: Optional[IdentifierScheme] = None
@@ -150,7 +149,7 @@ class ConformityAssessment(BaseModel):
     assessmentCriterion: Optional[Criterion] = None  # defines the criteria
     declaredValues: Optional[List[Metric]] = None
     compliance: Optional[bool] = False
-    
+
     conformityTopic: str = None
 
     assessedProduct: Optional[List[Product]] = []

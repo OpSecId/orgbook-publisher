@@ -1,10 +1,9 @@
 import uvicorn
 import asyncio
-from app.plugins import AskarStorage, AskarWallet
+from app.plugins import AskarStorage
 
 if __name__ == "__main__":
-    # asyncio.run(AskarStorage().provision(recreate=True))
-    asyncio.run(AskarWallet().provision(recreate=True))
+    asyncio.run(AskarStorage().provision())
     uvicorn.run(
         "app:app",
         host="0.0.0.0",
