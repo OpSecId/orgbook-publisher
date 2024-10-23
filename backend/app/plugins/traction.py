@@ -123,7 +123,7 @@ class TractionController:
             "cryptosuite": "eddsa-jcs-2022",
             "proofPurpose": "assertionMethod",
             "verificationMethod": f"{did}#{self.default_kid}-multikey",
-            "created": timestamp(),
+            # "created": timestamp(),
         }
         return self.add_di_proof(credential, proof_options)
 
