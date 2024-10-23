@@ -90,7 +90,7 @@ class Credential(BaseModel):
     type: Union[str, List[str]] = Field(["VerifiableCredential"])
     validFrom: SkipJsonSchema[str] = Field(None)
     validUntil: SkipJsonSchema[str] = Field(None)
-    credentialSubject: Union[List[CredentialSubject], CredentialSubject] = Field()
+    credentialSubject: Union[List[CredentialSubject], CredentialSubject] = Field(None)
     credentialStatus: SkipJsonSchema[
         Union[List[CredentialStatus], CredentialStatus]
     ] = Field(None)
