@@ -138,28 +138,6 @@ class AskarStorage:
         settings.LOGGER.info(self.db)
         await Store.provision(self.db, "raw", self.key, recreate=recreate)
 
-        settings.LOGGER.info("Caching issuer registry")
-        r = httpx.get(settings.ISSUER_REGISTRY_URL)
-        issuers = r.json()["issuers"]
-        for issuer in issuers:
-            settings.LOGGER.info(issuer["name"])
-            did_document = AskarWallet().resolve_did_web(issuer["id"])
-
-            try:
-                await self.store("issuer", did_document["id"], did_document)
-            except:
-                pass
-
-            try:
-                authorized_key = did_document["verificationMethod"][0][
-                    "publicKeyMultibase"
-                ]
-                await AskarStorage().store(
-                    "authorizedKey", did_document["id"], authorized_key
-                )
-            except:
-                pass
-
     async def open(self):
         return await Store.open(self.db, "raw", self.key)
 

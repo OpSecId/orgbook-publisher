@@ -20,22 +20,18 @@ async def register_issuer(
     request_body: IssuerRegistration, authorized=Depends(check_api_key_header)
 ):
     registration = vars(request_body)
-    did_document = PublisherRegistrar().register_issuer(
+    did_document = await PublisherRegistrar().register_issuer(
         registration["name"],
         registration["scope"],
         registration["url"],
         registration["description"],
         registration["multikey"],
     )
-    await AskarStorage().store("issuer", did_document["id"], did_document)
-    authorized_key = did_document["verificationMethod"][0]["publicKeyMultibase"]
-    await AskarStorage().store("authorizedKey", did_document["id"], authorized_key)
-    issuer = {
+    return JSONResponse(status_code=201, content={
         "id": did_document["id"],
         "name": registration["name"],
         "scope": registration["scope"],
-    }
-    return JSONResponse(status_code=201, content=issuer)
+    })
 
 
 @router.post("/credentials")

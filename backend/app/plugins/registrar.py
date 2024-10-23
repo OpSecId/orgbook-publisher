@@ -6,6 +6,7 @@ from app.plugins.soup import Soup
 from app.models import DidDocument, VerificationMethod, Service, Credential
 import app.models.untp as untp
 from app.models.credential import Issuer
+from app.plugins.askar import AskarStorage
 from app.plugins.traction import TractionController
 from app.plugins.untp import DigitalConformityCredential
 from app.utilities import multikey_to_jwk
@@ -16,9 +17,10 @@ class PublisherRegistrar:
         self.tdw_server = settings.TDW_SERVER_URL
         self.endorser_multikey = settings.TDW_ENDORSER_MULTIKEY
 
-    def register_issuer(self, name, scope, url, description, multikey=None):
+    async def register_issuer(self, name, scope, url, description, multikey=None):
         namespace = scope.replace(" ", "-").lower()
         identifier = name.replace(" ", "-").lower()
+        default_kid = "key-01"
 
         # Request identifier from TDW server
         r = requests.get(
@@ -30,14 +32,21 @@ class PublisherRegistrar:
             raise HTTPException(status_code=r.status_code, detail=r.text)
 
         # Register Authorized key in traction
-        multikey_kid = f"{did}#key-01-multikey"
-        jwk_kid = f"{did}#key-01-jwk"
+        multikey_kid = f"{did}#{default_kid}-multikey"
+        jwk_kid = f"{did}#{default_kid}-jwk"
+
 
         traction = TractionController()
         traction.authorize()
-        authorized_key = traction.create_did_key()
-        authorized_key = traction.create_did_web(did)
-        traction.bind_key(authorized_key, multikey_kid)
+        try:
+            authorized_key = traction.get_multikey(did)
+            try:
+                traction.bind_key(authorized_key, multikey_kid)
+            except:
+                pass
+        except:
+            authorized_key = traction.create_did_web(did)
+            traction.bind_key(authorized_key, multikey_kid)
 
         did_document = DidDocument(
             id=did,
@@ -61,13 +70,11 @@ class PublisherRegistrar:
             ],
             service=[
                 Service(
-                    id=f"{did}#bcgov-website",
+                    id=f"{did}#orgbook",
                     type="LinkedDomains",
-                    serviceEndpoint=url,
+                    serviceEndpoint=settings.ORGBOOK_URL,
                 )
             ]
-            if url
-            else None,
         )
 
         # Bind an issuing multikey if provided
@@ -117,6 +124,9 @@ class PublisherRegistrar:
             log_entry = r.json()
         except (ValueError, KeyError):
             raise HTTPException(status_code=r.status_code, detail=r.text)
+        
+        await AskarStorage().replace("issuer", did_document["id"], did_document)
+        await AskarStorage().replace("authorizedKey", did_document["id"], authorized_key)
         return did_document
 
     async def template_credential(self, credential_registration):

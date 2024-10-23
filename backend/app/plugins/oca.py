@@ -12,6 +12,8 @@ PNG_BUNDLE = {
             "originType": "Text",
             "originNumber": "Number",
             "caveats": "List[Text]",
+            "entityId": "Text",
+            "entityName": "Text",
         },
     },
     "overlays": [
@@ -23,6 +25,18 @@ PNG_BUNDLE = {
                 "originType": "$.credentialSubject.originType",
                 "originNumber": "$.credentialSubject.originNumber",
                 "caveats": "$.credentialSubject.caveats",
+                "entityId": "$.credentialSubject.issuedToParty.registeredId",
+                "entityName": "$.credentialSubject.issuedToParty.name",
+            },
+        },
+        {
+            "type": "vc/overlays/pointers/1.0",
+            "attribute_paths": {
+                "titleType": "/credentialSubject/titleType",
+                "titleNumber": "/credentialSubject/titleNumber",
+                "originType": "/credentialSubject/originType",
+                "originNumber": "/credentialSubject/originNumber",
+                "caveats": "/credentialSubject/caveats",
             },
         },
         {
@@ -35,6 +49,10 @@ PNG_BUNDLE = {
                     "originType",
                     "originNumber",
                     "caveats",
+                ],
+                'entity': [
+                    "entityId",
+                    "entityName"
                 ]
             },
             "render_template": "urn:bcgov:template:vc-card",

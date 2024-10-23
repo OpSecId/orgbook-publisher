@@ -2,7 +2,8 @@ from config import settings
 import requests
 from fastapi import HTTPException
 from app.utilities import timestamp, verkey_to_multikey
-from app.plugins.askar import AskarStorage
+from app.plugins.askar import AskarStorage, AskarWallet
+import httpx
 
 
 class TractionController:
@@ -22,6 +23,25 @@ class TractionController:
             raise HTTPException(
                 status_code=response.status_code, detail=response.json()
             )
+        
+    async def provision_tdw(self):
+        self.authorize()
+        settings.LOGGER.info("Fetching issuer registry")
+        r = httpx.get(settings.ISSUER_REGISTRY_URL)
+        issuers = r.json()["issuers"]
+        for issuer in issuers:
+            settings.LOGGER.info(issuer["name"])
+            authorized_key = self.get_multikey(issuer["id"])
+            # print(authorized_key)
+            # did_document = AskarWallet().resolve_did_web(issuer["id"])
+            # try:
+            #     await self.store("issuer", did_document["id"], did_document)
+            #     await AskarStorage().store(
+            #         "authorizedKey", did_document["id"], authorized_key
+            #     )
+            # except:
+            #     pass
+
 
     def authorize(self):
         r = requests.post(
@@ -47,6 +67,14 @@ class TractionController:
         )
         did_info = self._try_response(r, "result")
         return did_info["did"].split(":")[-1]
+
+    def get_multikey(self, did):
+        r = requests.get(
+            f"{self.endpoint}/wallet/did?did={did}",
+            headers=self.headers
+        )
+        did_info = self._try_response(r, "results")[0]
+        return verkey_to_multikey(did_info["verkey"])
 
     def create_did_web(self, did):
         r = requests.post(

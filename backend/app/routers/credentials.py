@@ -177,6 +177,9 @@ async def get_status_list_credential(status_credential_id: str, request: Request
         return JSONResponse(
             headers={"Content-Type": "application/vc+jwt"}, content=vc_jwt
         )
-    else:
+    elif "application/vc" in request.headers["accept"]:
         vc = traction.issue_vc(status_list_credential)
         return JSONResponse(headers={"Content-Type": "application/vc"}, content=vc)
+    else:
+        vc = traction.issue_vc(status_list_credential)
+        return JSONResponse(content=vc)

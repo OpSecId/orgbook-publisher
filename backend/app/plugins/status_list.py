@@ -9,7 +9,7 @@ from app.plugins.askar import AskarStorage
 class BitstringStatusList:
     def __init__(self):
         self.store = AskarStorage()
-        self.lenght = 200000
+        self.length = 200000
 
     def generate(self, bitstring):
         # https://www.w3.org/TR/vc-bitstring-status-list/#bitstring-generation-algorithm
@@ -43,7 +43,7 @@ class BitstringStatusList:
             "issuer": {"id": credential_registration["issuer"]},
             "credentialSubject": {
                 "type": "BitstringStatusList",
-                "encodedList": self.generate(str(0) * self.lenght),
+                "encodedList": self.generate(str(0) * self.length),
                 "statusPurpose": ["revocation", "suspension", "update"],
             },
         }
@@ -52,22 +52,27 @@ class BitstringStatusList:
                 "statusListCredential", status_list_id, status_list_credential
             )
             await AskarStorage().store(
-                "statusListEntries", status_list_id, [0, self.lenght - 1]
+                "statusListEntries", status_list_id, [0, self.length - 1]
             )
         except:
             pass
         return status_list_id
-
-    async def create_entry(self, status_list_id, purpose="revocation"):
-        # https://www.w3.org/TR/vc-bitstring-status-list/#example-example-statuslistcredential
+    
+    async def find_index(self, status_list_id):
         storage = AskarStorage()
         status_entries = await storage.fetch("statusListEntries", status_list_id)
         # Find an unoccupied index
         status_index = random.choice(
-            [e for e in range(self.lenght - 1) if e not in status_entries]
+            [e for e in range(self.length - 1) if e not in status_entries]
         )
         status_entries.append(status_index)
         await storage.update("statusListEntries", status_list_id, status_entries)
+        return status_index
+
+    async def create_entry(self, status_list_id, purpose="revocation"):
+        # https://www.w3.org/TR/vc-bitstring-status-list/#example-example-statuslistcredential
+        storage = AskarStorage()
+        status_index = self.find_index(status_list_id)
 
         status_credential = await storage.fetch("statusListCredential", status_list_id)
         credential_status_id = status_credential["id"]
