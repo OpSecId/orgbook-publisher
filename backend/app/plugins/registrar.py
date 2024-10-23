@@ -137,12 +137,8 @@ class PublisherRegistrar:
             description=issuer["description"],
         )
 
-        # W3C context & type
-        credential = Credential(
-            credentialSubject={
-                "type": credential_registration["subjectType"]
-            }
-        )
+        # Initialize VC
+        credential = Credential()
 
         # UNTP context & type
         if "untpType" in credential_registration:
@@ -160,9 +156,7 @@ class PublisherRegistrar:
                     "effectiveDate": legal_act_info["effectiveDate"],
                 }
 
-                credential.credentialSubject = (
-                    credential.credentialSubject
-                    | untp.ConformityAttestation(
+                credential.credentialSubject = untp.ConformityAttestation(
                         assessmentLevel="GovtApproval",
                         attestationType="Certification",
                         scope=untp.ConformityAssessmentScheme(
@@ -194,11 +188,11 @@ class PublisherRegistrar:
                             )
                         ],
                     ).model_dump()
-                )
 
         # BCGov context & type
         credential.context.append(credential_registration["relatedResources"]["context"])
         credential.type.append(credential_registration["type"])
+        credential.credentialSubject.type.append(credential_registration["subjectType"])
 
         return credential.model_dump()
 
