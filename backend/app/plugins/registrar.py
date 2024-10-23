@@ -192,7 +192,7 @@ class PublisherRegistrar:
         # BCGov context & type
         credential.context.append(credential_registration["relatedResources"]["context"])
         credential.type.append(credential_registration["type"])
-        credential.credentialSubject.type.append(credential_registration["subjectType"])
+        credential.credentialSubject['type'].append(credential_registration["subjectType"])
 
         return credential.model_dump()
 
