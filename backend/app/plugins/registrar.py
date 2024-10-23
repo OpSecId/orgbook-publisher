@@ -138,9 +138,7 @@ class PublisherRegistrar:
         )
 
         # Initialize VC
-        credential = Credential(
-            credentialSubject={}
-        )
+        credential = Credential()
 
         # UNTP context & type
         if "untpType" in credential_registration:
