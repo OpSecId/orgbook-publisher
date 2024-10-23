@@ -36,7 +36,6 @@ class DigitalConformityCredential:
 
     def add_assessment(self, regulation=None, products=[], facilities=[]):
         assessment = untp.ConformityAssessment(
-            compliance=True,
             conformityTopic="Governance.Compliance",
             referenceRegulation=untp.Regulation(
                 id=regulation["id"],

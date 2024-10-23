@@ -148,7 +148,6 @@ class ConformityAssessment(BaseModel):
     referenceRegulation: Optional[Regulation] = None  # defines the regulation
     assessmentCriterion: Optional[Criterion] = None  # defines the criteria
     declaredValues: Optional[List[Metric]] = None
-    compliance: Optional[bool] = False
 
     conformityTopic: str = None
 

@@ -174,7 +174,6 @@ class PublisherRegistrar:
                         ),
                         assessment=[
                             untp.ConformityAssessment(
-                                compliance=True,
                                 conformityTopic="Governance.Compliance",
                                 referenceRegulation=untp.Regulation(
                                     id=legal_act_info["id"],
