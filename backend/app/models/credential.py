@@ -86,6 +86,7 @@ class RenderMethod(BaseModel):
 
 
 class Credential(BaseModel):
+    context: List[str] = Field(alias="@context")
     type: Union[str, List[str]] = Field()
     validFrom: SkipJsonSchema[str] = Field(None)
     validUntil: SkipJsonSchema[str] = Field(None)
@@ -105,6 +106,12 @@ class Credential(BaseModel):
     relatedResource: SkipJsonSchema[Union[List[RelatedResource], RelatedResource]] = (
         Field(None)
     )
+
+    @field_validator("context")
+    @classmethod
+    def validate_context(cls, value):
+        assert value[0] == "https://www.w3.org/ns/credentials/v2"
+        return value
 
     @field_validator("id")
     @classmethod
