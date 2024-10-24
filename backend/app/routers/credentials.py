@@ -194,7 +194,7 @@ async def get_status_list_credential(status_credential_id: str, request: Request
     status_list_credential["validUntil"] = timestamp(5)
     traction = TractionController()
     traction.authorize()
-    if "application/vc+jwt" in request.headers:
+    if "application/vc+jwt" in request.headers["accept"]:
         vc_jwt = traction.sign_vc_jwt(status_list_credential)
         return Response(content=vc_jwt, media_type="application/vc+jwt")
     elif "application/vc" in request.headers["accept"]:
