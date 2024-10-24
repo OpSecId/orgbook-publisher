@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Header
+from fastapi import APIRouter, Depends, HTTPException, Request, Header, Response
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from app.models.web_schemas import (
@@ -154,10 +154,7 @@ async def get_credential(credential_id: str, request: Request):
     traction.authorize()
     # verified = traction.verify_di_proof(vc)
     if "application/vc+jwt" in request.headers["accept"]:
-        return JSONResponse(
-            headers={"Content-Type": "application/vc+jwt"},
-            content=vc_jwt,
-        )
+        return Response(content=vc_jwt, media_type="application/vc+jwt")
     elif "application/vc" in request.headers["accept"]:
         return JSONResponse(
             headers={"Content-Type": "application/vc"}, 
@@ -199,9 +196,7 @@ async def get_status_list_credential(status_credential_id: str, request: Request
     traction.authorize()
     if "application/vc+jwt" in request.headers:
         vc_jwt = traction.sign_vc_jwt(status_list_credential)
-        return JSONResponse(
-            headers={"Content-Type": "application/vc+jwt"}, content=vc_jwt
-        )
+        return Response(content=vc_jwt, media_type="application/vc+jwt")
     elif "application/vc" in request.headers["accept"]:
         vc = traction.issue_vc(status_list_credential)
         return JSONResponse(headers={"Content-Type": "application/vc"}, content=vc)
