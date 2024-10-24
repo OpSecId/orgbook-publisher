@@ -47,7 +47,7 @@ async def forward_credential(request_body: ForwardCredential):
         "updated": "0",
     }
     
-    credential_id = vc['id'].split('/')[-1]
+    credential_id = options['credentialId']
     await AskarStorage().store("application/vc", credential_id, vc, tags=tags)
     await AskarStorage().store("application/vc+jwt", credential_id, vc_jwt, tags=tags)
     await OrgbookPublisher().forward_credential(vc, credential_registration)
