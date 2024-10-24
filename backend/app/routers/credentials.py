@@ -37,15 +37,20 @@ async def forward_credential(request_body: ForwardCredential):
     except:
         raise HTTPException(status_code=404, detail="Unknown credential type.")
 
+    traction = TractionController()
+    traction.authorize()
+    vc_jwt = traction.sign_vc_jwt(vc)
     tags = {
         "entityId": options["entityId"],
         "resourceId": options["resourceId"],
         "revoked": "0",
         "updated": "0",
     }
-
-    await AskarStorage().store("credential", options["credentialId"], vc, tags=tags)
-    # await OrgbookPublisher().forward_credential(vc, credential_registration)
+    
+    credential_id = vc['id'].split('/')[-1]
+    await AskarStorage().store("application/vc", credential_id, vc, tags=tags)
+    await AskarStorage().store("application/vc+jwt", credential_id, vc_jwt, tags=tags)
+    await OrgbookPublisher().forward_credential(vc, credential_registration)
     return JSONResponse(status_code=201, content={"credentialId": options["credentialId"]})
 
 
