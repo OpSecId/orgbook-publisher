@@ -106,11 +106,10 @@ subject_example = {
         "SEASONAL ACCESS RESTRICTIONS MAY APPLY.",
         "POTENTIAL FOR ARCHAEOLOGICAL RESOURCES EXISTS; ARCHAEOLOGICAL IMPACT ASSESSMENT MAY BE REQUIRED.",
     ],
-    "interest": "100.00",
-    "titleType": "NaturalGas",
+    "titleType": "NaturalGasLease",
     "titleNumber": "62715",
     "titleHolder": "PACIFIC CANBRIAM ENERGY LIMITED",
-    "originType": "DrillingLicense",
+    "originType": "DrillingLicence",
     "originNumber": "60646",
 }
 
