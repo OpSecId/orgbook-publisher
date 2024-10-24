@@ -1,0 +1,93 @@
+{
+    "capture_base": {
+        "type": "spec/capture_base/1.0",
+        "attributes": {
+            "titleType": "Text",
+            "titleNumber": "Number",
+            "originType": "Text",
+            "originNumber": "Number",
+            "caveats": "List[Text]",
+            "entityId": "Text",
+            "entityName": "Text"
+        }
+    },
+    "overlays": [
+        {
+            "type": "spec/overlays/label/1.0",
+            "attribute_labels": {
+                "titleType": "Type",
+                "titleNumber": "Number",
+                "originType": "Origin Type",
+                "originNumber": "Origin Number",
+                "entityId": "BC Registration Id",
+                "entityName": "Business Name"
+            }
+        },
+        {
+            "type": "spec/overlays/information/1.0",
+            "attribute_information": {
+                "titleType": "This field specifies the type of title based on the PNG Act. Title types can include the following: 1. Lease (Part 6); 2. Permit (Part 5); 3. Drilling Licence (Part 5.1), and 4. Storage Reservoir Licence (Part 14.130). Each title has only one title type.",
+                "titleNumber": "A number is used to uniquely identify a title, assigned based on administrative policy by the Tenure and Resource Stewardship Branch (TRSB). The title number is associated with the Exploration Licence outlined in Section 126, Part 14.126 of the PNG Act.",
+                "originType": "This field specifies the type of origin based on the PNG Act. Origin types can include the following: 1. Lease (Part 6); 2. Permit (Part 5); 3. Drilling Licence (Part 5.1), and 4. Storage Reservoir Licence (Part 14.130). Each title has only one origin type.",
+                "originNumber": "A number is used to uniquely identify an origin, assigned based on administrative policy by the TRSB.",
+                "caveats": "Caveats provide information and guidance to the tenure holder that will assist in activity planning by identifying potential access restrictions. Caveats will also flag concerns identified through pre-tenure consultation and may recommend engagement with First Nations, stakeholders, and other agencies as appropriate. Caveats often point to relevant statute and policy and are not binding or enforced by the Ministry.",
+                "entityId": "The BC business registration of the title holder.",
+                "entityName": "The name of the title holder as registered in the province of BC."
+            }
+        },
+        {
+            "type": "vc/overlays/paths/1.0",
+            "attribute_paths": {
+                "titleType": "$.credentialSubject.titleType",
+                "titleNumber": "$.credentialSubject.titleNumber",
+                "originType": "$.credentialSubject.originType",
+                "originNumber": "$.credentialSubject.originNumber",
+                "caveats": "$.credentialSubject.caveats",
+                "entityId": "$.credentialSubject.issuedToParty.registeredId",
+                "entityName": "$.credentialSubject.issuedToParty.name"
+            }
+        },
+        {
+            "type": "vc/overlays/pointers/1.0",
+            "attribute_pointers": {
+                "titleType": "/credentialSubject/titleType",
+                "titleNumber": "/credentialSubject/titleNumber",
+                "originType": "/credentialSubject/originType",
+                "originNumber": "/credentialSubject/originNumber",
+                "caveats": "/credentialSubject/caveats"
+            }
+        },
+        {
+            "type": "vc/overlays/render/1.0",
+            "media_type": "text/html",
+            "attribute_groupings": {
+                "Holder": [
+                    "entityId",
+                    "entityName"
+                ],
+                "Title": [
+                    "titleType",
+                    "titleNumber",
+                    "originType",
+                    "originNumber"
+                ]
+            },
+            "render_template": "urn:bcgov:template:vc-card"
+        },
+        {
+            "type": "aries/overlays/branding/1.0",
+            "primary_attribute": "titleType",
+            "secondary_attribute": "entityName",
+            "primary_background_color": "#003366",
+            "secondary_background_color": "#00264D",
+            "logo": "https://avatars.githubusercontent.com/u/916280"
+        },
+        {
+            "type": "spec/overlays/meta/1.0",
+            "url": "https://www.bclaws.gov.bc.ca/civix/document/id/complete/statreg/96361_01",
+            "name": "BC Petroleum and Natural Gas Title",
+            "description": "The majority of subsurface petroleum and natural gas (PNG) resources in British Columbia (B.C.) are owned by the Province. By entering into a tenure agreement with the Province, private industry can develop these resources. Tenure agreements are the mechanism used by the Province to give rights to petroleum and natural gas resources through issuance of Petroleum and Natural Gas Titles.",
+            "issuer": "Director of Petroleum Lands"
+        }
+    ]
+}

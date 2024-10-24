@@ -1,72 +1,5 @@
 from jsonpath_ng import jsonpath, parse
 from fastapi.templating import Jinja2Templates
-import pystache
-import segno
-
-PNG_BUNDLE = {
-    "capture_base": {
-        "type": "",
-        "attributes": {
-            "titleType": "Text",
-            "titleNumber": "Number",
-            "originType": "Text",
-            "originNumber": "Number",
-            "caveats": "List[Text]",
-            "entityId": "Text",
-            "entityName": "Text",
-        },
-    },
-    "overlays": [
-        {
-            "type": "vc/overlays/paths/1.0",
-            "attribute_paths": {
-                "titleType": "$.credentialSubject.titleType",
-                "titleNumber": "$.credentialSubject.titleNumber",
-                "originType": "$.credentialSubject.originType",
-                "originNumber": "$.credentialSubject.originNumber",
-                "caveats": "$.credentialSubject.caveats",
-                "entityId": "$.credentialSubject.issuedToParty.registeredId",
-                "entityName": "$.credentialSubject.issuedToParty.name",
-            },
-        },
-        {
-            "type": "vc/overlays/pointers/1.0",
-            "attribute_paths": {
-                "titleType": "/credentialSubject/titleType",
-                "titleNumber": "/credentialSubject/titleNumber",
-                "originType": "/credentialSubject/originType",
-                "originNumber": "/credentialSubject/originNumber",
-                "caveats": "/credentialSubject/caveats",
-            },
-        },
-        {
-            "type": "vc/overlays/render/1.0",
-            "media_type": "text/html",
-            "attribute_groupings": {
-                "title": [
-                    "titleType",
-                    "titleNumber",
-                    "originType",
-                    "originNumber",
-                    "caveats",
-                ],
-                'entity': [
-                    "entityId",
-                    "entityName"
-                ]
-            },
-            "render_template": "urn:bcgov:template:vc-card",
-        },
-        {
-            "type": "aries/overlays/branding/1.0",
-            "primary_attribute": "titleType",
-            "secondary_attribute": "titleNumber",
-            "image": "https://avatars.githubusercontent.com/u/916280",
-            "name": "BC Petroleum and Natural Gas Title",
-            "issuer": "Director of Petroleum Lands",
-        },
-    ],
-}
 
 
 class OCAReader:
@@ -78,76 +11,40 @@ class OCAReader:
             template = f.read()
         return template
 
-    def render(self, document, bundle):
-        bundle = PNG_BUNDLE
-        values = {}
-        paths_overlay = next(
+    def get_overlay(self, bundle, overlay_type):
+        return next(
             (
                 overlay
                 for overlay in bundle["overlays"]
-                if overlay["type"] == "vc/overlays/paths/1.0"
+                if overlay["type"] == overlay_type
             ),
             None,
         )
+
+    def render(self, document, bundle):
+        pass
+
+    def create_context(self, document, bundle):
+        information_overlay = self.get_overlay(bundle, "spec/overlays/information/1.0")
+        labels_overlay = self.get_overlay(bundle, "spec/overlays/label/1.0")
+        paths_overlay = self.get_overlay(bundle, "vc/overlays/paths/1.0")
+        render_overlay = self.get_overlay(bundle, "vc/overlays/render/1.0")
+        branding_overlay = self.get_overlay(bundle, "aries/overlays/branding/1.0")
+        meta_overlay = self.get_overlay(bundle, "spec/overlays/meta/1.0")
+        
+        
+        values = {}
         for attribute in paths_overlay["attribute_paths"]:
             jsonpath_expr = parse(paths_overlay["attribute_paths"][attribute])
             values[attribute] = [match.value for match in jsonpath_expr.find(document)][
                 0
             ]
 
-        render_overlay = next(
-            (
-                overlay
-                for overlay in bundle["overlays"]
-                if overlay["type"] == "vc/overlays/render/1.0"
-            ),
-            None,
-        )
-        groupings = {}
-        for grouping in render_overlay["attribute_groupings"]:
-            groupings[grouping] = {}
-            for attribute in values:
-                if attribute in render_overlay["attribute_groupings"][grouping]:
-                    groupings[grouping][attribute] = values[attribute]
-
-        branding_overlay = next(
-            (
-                overlay
-                for overlay in bundle["overlays"]
-                if overlay["type"] == "vc/overlays/branding/1.0"
-            ),
-            None,
-        )
-
-        credential = {"name": branding_overlay["name"]}
-        issuer = {
-            "id": document["issuer"]["id"],
-            "name": branding_overlay["issuer"],
-            "image": branding_overlay["image"],
+        return {
+            "values": values,
+            "labels": labels_overlay['attribute_labels'],
+            "descriptions": information_overlay['attribute_information'],
+            "groupings": render_overlay['attribute_groupings'],
+            "meta": meta_overlay,
+            "branding": branding_overlay,
         }
-        verified = True
-        status = True
-        qr_code = segno.make(document["id"])
-        template = self.load_template(render_overlay["render_template"])
-        context = {
-            "groupings": groupings,
-            "issuer": issuer,
-            "credential": credential,
-            "qrcode": qr_code,
-            "verified": verified,
-            "status": status,
-        }
-        # rendered = pystache.render(template, context)
-        return pystache.render(template, context)
-        return self.templates.TemplateResponse(
-            request=request,
-            name="base.jinja",
-            context={
-                "groupings": groupings,
-                "issuer": issuer,
-                "credential": credential,
-                "qrcode": qr_code,
-                "verified": verified,
-                "status": status,
-            },
-        )

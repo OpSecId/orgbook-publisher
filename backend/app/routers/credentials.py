@@ -19,7 +19,9 @@ from app.plugins import (
     PublisherRegistrar,
 )
 import uuid
+import json
 from datetime import datetime
+import segno
 
 router = APIRouter(prefix="/credentials", tags=["Credentials"])
 
@@ -68,6 +70,7 @@ async def publish_credential(request_body: PublishCredential):
     traction = TractionController()
     traction.authorize()
     vc = traction.issue_vc(credential)
+    vc_jwt = traction.sign_vc_jwt(vc)
 
     tags = {
         "entityId": data["core"]["entityId"],
@@ -76,10 +79,10 @@ async def publish_credential(request_body: PublishCredential):
         "updated": "0",
     }
 
-    await AskarStorage().store("credential", credential_id, vc, tags=tags)
-    forwarded_payload = await OrgbookPublisher().forward_credential(vc, credential_registration)
-    return JSONResponse(status_code=201, content=vc)
-    return JSONResponse(status_code=201, content={"credentialId": credential_id})
+    await AskarStorage().store("application/vc", credential_id, vc, tags=tags)
+    await AskarStorage().store("application/vc+jwt", credential_id, vc_jwt, tags=tags)
+    # await OrgbookPublisher().forward_credential(vc, credential_registration)
+    return JSONResponse(status_code=201, content={"credentialId": vc['id']})
 
 
 @router.post("/issue")
@@ -145,18 +148,37 @@ async def issue_credential(request_body: IssueCredential):
 
 @router.get("/{credential_id}")
 async def get_credential(credential_id: str, request: Request):
-    vc = await AskarStorage().fetch("credential", credential_id)
+    vc = await AskarStorage().fetch("application/vc", credential_id)
+    vc_jwt = await AskarStorage().fetch("application/vc+jwt", credential_id)
     traction = TractionController()
     traction.authorize()
+    # verified = traction.verify_di_proof(vc)
     if "application/vc+jwt" in request.headers["accept"]:
         return JSONResponse(
             headers={"Content-Type": "application/vc+jwt"},
-            content=traction.sign_vc_jwt(vc),
+            content=vc_jwt,
         )
     elif "application/vc" in request.headers["accept"]:
-        return JSONResponse(headers={"Content-Type": "application/vc"}, content=vc)
-    else:
-        return JSONResponse(content=vc)
+        return JSONResponse(
+            headers={"Content-Type": "application/vc"}, 
+            content=vc
+        )
+    oca = OCAReader()
+    with open('app/static/oca-bundles/png-title.json', 'r') as f:
+        bundle = json.loads(f.read())
+    context = oca.create_context(vc, bundle)
+    return oca.templates.TemplateResponse(
+        request=request,
+        name="base.jinja",
+        context= context | {
+            # 'vc': json.dumps(vc, indent=2),
+            'vc': vc,
+            'vc_jwt': vc_jwt,
+            "qrcode": segno.make(vc["id"]),
+            'verified': True,
+            'status': True
+        }
+    )
     # rendered_template = OCAReader().render(vc, None)
     # return JSONResponse(status_code=201, content=vc)
 

@@ -2,48 +2,45 @@
 
 <head>
     <meta charset="utf-8">
-    <title>OCA Rendering</title>
+    <title>BC Gov - OCA Rendering</title>
     <link rel="icon" href="./favicon.ico" type="image/x-icon">
     <link href="https://preview.tabler.io/dist/css/tabler.min.css" rel="stylesheet">
 </head>
 
 <body class=" d-flex flex-column">
     <div class="page page-center">
-        <div class="container container py-4">
-            <div class="text-center mb-4">
-            </div>
+        <div class="container container-tight py-4">
             <div class="card card-md">
-                {# <div class="card-body">
-                </div> #}
-                
+                <div class="card-header">
+                    <div class="badges-list centered">
+                        <span onclick="copyJson({{vc}})" class="badge badge-outline">VC</span>
+                        <span onclick="copyString('{{vc_jwt}}')" class="badge badge-outline">JWT</span>
+                    </div>
+                </div>
                 <div class="card-body">
-                    <a class="card-link" href="{{issuer['id']}}">
+                    <div>
                         <div class="row">
                             <div class="col-auto">
                                 <span class="avatar avatar-xl rounded"
-                                    style="background-image: url({{issuer['image']}})"></span>
+                                    style="background-image: url({{branding['logo']}})"></span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">{{issuer['name']}}</div>
-                                <div class="text-secondary">{{issuer['description']}}</div>
+                                <div class="font-weight-medium">{{meta['issuer']}}</div>
+                                <div class="text-secondary">{{meta['name']}}</div>
+                                {# <div class="text-secondary">{{meta['description']}}</div> #}
                             </div>
                         </div>
-                    </a>
+                    </div>
                 </div>
                 <div class="card-body">
                         <div class="row">
                             <div class="col-auto">
-                                <center>
-                                    {{ qrcode.svg_inline(scale=3) | safe }}
-                                    {# <div class="badges-list centered">
-                                        <span class="badge badge-outline">VC</span>
-                                        <span class="badge badge-outline">JWT</span>
-                                    </div> #}
-                                </center>
+                                <span class="avatar avatar-xl rounded">{{ qrcode.svg_inline(scale=2) | safe }}</span>
+                                {# <center>{{ qrcode.svg_inline(scale=3) | safe }}</center> #}
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">{{branding['name']}}</div>
-                                {# <div class="text-secondary">{{issuer['description']}}</div> #}
+                                <div class="font-weight-medium">{{values[branding['primary_attribute']]}}</div>
+                                <div class="text-secondary">{{values[branding['secondary_attribute']]}}</div>
                             </div>
                         </div>
 
@@ -52,9 +49,9 @@
                     {% for grouping in groupings %}
                     <div class="hr-text">{{grouping}}</div>
                     <dl class="row">
-                        {% for path in groupings[grouping] %}
-                        <dt class="col-6">{{path}}</dt>
-                        <dd class="col-6">{{groupings[grouping][path]}}</dd>
+                        {% for attribute in groupings[grouping] %}
+                        <dt class="col-6" data-bs-toggle="tooltip" data-bs-placement="left" title="{{descriptions[attribute]}}">{{labels[attribute]}}</dt>
+                        <dd class="col-6">{{values[attribute]}}</dd>
                         {% endfor %}
                     </dl>
                     {% endfor %}
@@ -63,6 +60,16 @@
         </div>
     </div>
     <script src="https://preview.tabler.io/dist/js/tabler.min.js"></script>
+    <script>
+        function copyJson(content) {
+            navigator.clipboard.writeText(JSON.stringify(content, null, 2));
+        }
+    </script>
+    <script>
+        function copyString(content) {
+            navigator.clipboard.writeText(content);
+        }
+    </script>
 </body>
 
 </html>
