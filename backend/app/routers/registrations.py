@@ -60,5 +60,5 @@ async def register_credential_type(
         credential_template,
     )
 
-    # await OrgbookPublisher().create_credential_type(credential_registration)
+    await OrgbookPublisher().create_credential_type(credential_registration)
     return JSONResponse(status_code=201, content=credential_registration)

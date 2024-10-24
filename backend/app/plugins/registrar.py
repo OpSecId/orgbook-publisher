@@ -52,8 +52,14 @@ class PublisherRegistrar:
             id=did,
             name=name,
             description=description,
-            authentication=[multikey_kid],
-            assertionMethod=[multikey_kid],
+            authentication=[
+                multikey_kid,
+                jwk_kid,
+            ],
+            assertionMethod=[
+                multikey_kid,
+                jwk_kid,
+            ],
             verificationMethod=[
                 VerificationMethod(
                     id=multikey_kid,
@@ -79,12 +85,26 @@ class PublisherRegistrar:
 
         # Bind an issuing multikey if provided
         if multikey:
+            delegated_kid_multikey = f"{did}#key-02-multikey"
+            delegated_kid_jwk = f"{did}#key-02-jwk"
+            did_document.authentication.append(delegated_kid_multikey)
+            did_document.assertionMethod.append(delegated_kid_multikey)
             did_document.verificationMethod.append(
                 VerificationMethod(
-                    id=f"{did}#key-02-multikey",
+                    id=delegated_kid_multikey,
                     type="Multikey",
                     controller=did,
                     publicKeyMultibase=multikey,
+                )
+            )
+            did_document.authentication.append(delegated_kid_jwk)
+            did_document.assertionMethod.append(delegated_kid_jwk)
+            did_document.verificationMethod.append(
+                VerificationMethod(
+                    id=delegated_kid_jwk,
+                    type="JsonWebKey",
+                    controller=did,
+                    publicKeyJwk=multikey_to_jwk(multikey),
                 )
             )
 
