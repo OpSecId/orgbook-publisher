@@ -1,0 +1,70 @@
+{
+    "capture_base": {
+        "type": "spec/capture_base/1.0",
+        "attributes": {
+            "permitNumber": "Text",
+            "entityId": "Text",
+            "entityName": "Text"
+        }
+    },
+    "overlays": [
+        {
+            "type": "spec/overlays/label/1.0",
+            "attribute_labels": {
+                "permitNumber": "Permit Number",
+                "entityId": "BC Registration Id",
+                "entityName": "Business Name"
+            }
+        },
+        {
+            "type": "spec/overlays/information/1.0",
+            "attribute_information": {
+                "permitNumber": "Permit Number assigned by the permitting inspector",
+                "entityId": "The BC business registration of the title holder.",
+                "entityName": "The name of the title holder as registered in the province of BC."
+            }
+        },
+        {
+            "type": "vc/overlays/paths/1.0",
+            "attribute_paths": {
+                "permitNumber": "$.credentialSubject.permitNumber",
+                "entityId": "$.credentialSubject.issuedToParty.registeredId",
+                "entityName": "$.credentialSubject.issuedToParty.name"
+            }
+        },
+        {
+            "type": "vc/overlays/pointers/1.0",
+            "attribute_pointers": {
+                "permitNumber": "/credentialSubject/permitNumber",
+            }
+        },
+        {
+            "type": "vc/overlays/render/1.0",
+            "media_type": "text/html",
+            "attribute_groupings": {
+                "Holder": [
+                    "entityId",
+                    "entityName"
+                ],
+                "Title": [
+                    "permitNumber"
+                ]
+            },
+            "render_template": "urn:bcgov:template:vc-card"
+        },
+        {
+            "type": "aries/overlays/branding/1.0",
+            "primary_attribute": "permitNumber",
+            "secondary_attribute": "entityName",
+            "primary_background_color": "#003366",
+            "secondary_background_color": "#00264D",
+            "logo": "https://avatars.githubusercontent.com/u/916280"
+        },
+        {
+            "type": "spec/overlays/meta/1.0",
+            "name": "BC Mines Act Permit Credential",
+            "description": "This credential shows proof of the agreenment between the Province and Permitee to disturb land and extract minerals under the Mines Act.",
+            "issuer": "Chief Permitting Officer"
+        }
+    ]
+}
