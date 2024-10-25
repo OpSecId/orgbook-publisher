@@ -127,5 +127,5 @@ class ForwardingOptions(BaseModel):
     credentialType: str = Field()
 
 class ForwardCredential(BaseModel):
-    credential: Credential = Field()
+    verifiableCredential: Credential = Field()
     options: ForwardingOptions = Field()

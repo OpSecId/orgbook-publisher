@@ -243,39 +243,38 @@ class AskarVerifier:
             assert proof["type"] == self.type
             assert proof["cryptosuite"] == self.cryptosuite
             assert proof["proofPurpose"] == self.purpose
-            assert proof["domain"] == settings.DOMAIN
             # assert datetime.fromisoformat(proof["created"]) < datetime.now(timezone.utc)
             # assert datetime.fromisoformat(proof["expires"]) > datetime.now(timezone.utc)
-            assert proof["challenge"] == self.create_challenge(
-                proof["created"] + proof["expires"]
-            )
         except:
             raise HTTPException(status_code=400, detail="Invalid Proof.")
 
     def verify(self, message, signature):
         return self.verifier.verify_signature(message=message, signature=signature)
 
+    def known_issuer(self, issuer):
+        pass
+
     def verify_proof(self, document, proof):
         self.assert_proof_options(proof)
-        assert (
-            proof["verificationMethod"].split("#")[0] == document["id"]
-            or proof["verificationMethod"].split("#")[0] == settings.DID_WEB_BASE
+        assert proof["verificationMethod"].split("#")[0] == document["id"]
+
+        multikey = proof["verificationMethod"].split("#")[-1]
+        key = Key(LocalKeyHandle()).from_public_bytes(
+            alg="ed25519", public=bytes(bytearray(multibase.decode(multikey))[2:])
         )
 
         proof_options = proof.copy()
         proof_value = proof_options.pop("proofValue")
         proof_bytes = multibase.decode(proof_value)
-
         hash_data = (
-            sha256(canonicaljson.encode_canonical_json(document)).digest()
-            + sha256(canonicaljson.encode_canonical_json(proof_options)).digest()
+            sha256(canonicaljson.encode_canonical_json(proof_options)).digest()
+            + sha256(canonicaljson.encode_canonical_json(document)).digest()
         )
 
         try:
-            return self.verifier.verify_signature(
-                message=proof_bytes + hash_data, signature=None
-            )
+            if not key.verify_signature(message=hash_data, signature=proof_bytes):
+                raise HTTPException(
+                    status_code=400, detail="Signature was forged or corrupt."
+                )
         except:
-            raise HTTPException(
-                status_code=400, detail="Signature was forged or corrupt."
-            )
+            raise HTTPException(status_code=400, detail="Error verifying proof.")

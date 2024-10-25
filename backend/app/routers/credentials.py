@@ -29,7 +29,7 @@ router = APIRouter(prefix="/credentials", tags=["Credentials"])
 @router.post("/forward")
 async def forward_credential(request_body: ForwardCredential):
     vc = request_body.model_dump()["verifiableCredential"]
-    options = request_body.model_dump()["verifiableCredential"]
+    options = request_body.model_dump()["options"]
     try:
         credential_registration = await AskarStorage().fetch(
             "credentialRegistration", options['credentialType']
