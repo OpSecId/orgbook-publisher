@@ -35,7 +35,7 @@
         {
             "type": "vc/overlays/pointers/1.0",
             "attribute_pointers": {
-                "permitNumber": "/credentialSubject/permitNumber",
+                "permitNumber": "/credentialSubject/permitNumber"
             }
         },
         {
