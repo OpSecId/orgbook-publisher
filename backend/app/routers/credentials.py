@@ -169,11 +169,14 @@ async def get_credential(credential_id: str, request: Request):
     with open('app/static/oca-bundles/png-title.json', 'r') as f:
         bundle = json.loads(f.read())
     context = oca.create_context(vc, bundle)
+    primary_attribute = context['values'][context['branding']['primary_attribute']]
+    secondary_attribute = context['values'][context['branding']['secondary_attribute']]
     return oca.templates.TemplateResponse(
         request=request,
         name="base.jinja",
         context= context | {
             # 'vc': json.dumps(vc, indent=2),
+            'title': f'{primary_attribute} | {secondary_attribute}',
             'vc': vc,
             'vc_jwt': vc_jwt,
             "qrcode": segno.make(vc["id"]),

@@ -32,14 +32,12 @@ class OCAReader:
         branding_overlay = self.get_overlay(bundle, "aries/overlays/branding/1.0")
         meta_overlay = self.get_overlay(bundle, "spec/overlays/meta/1.0")
         
-        
         values = {}
         for attribute in paths_overlay["attribute_paths"]:
             jsonpath_expr = parse(paths_overlay["attribute_paths"][attribute])
             values[attribute] = [match.value for match in jsonpath_expr.find(document)][
                 0
             ]
-
         return {
             "values": values,
             "labels": labels_overlay['attribute_labels'],
