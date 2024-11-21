@@ -132,7 +132,7 @@ async def get_credential(credential_id: str, request: Request):
             'issuer': vc['issuer']['name'],
         }
         values = {
-            'cardinalityId': credential_record['cardinalityId'],
+            'cardinalityId': credential_record['cardinality_id'],
             'entityId': vc['credentialSubject']['issuedToParty']['registeredId'],
             'entityName': vc['credentialSubject']['issuedToParty']['name'],
         }
