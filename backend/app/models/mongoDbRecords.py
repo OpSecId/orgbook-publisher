@@ -40,7 +40,7 @@ class CredentialRecord(BaseModel):
     revocation: bool = Field()
     suspension: bool = Field()
     vc: dict = Field()
-    jwt: str = Field()
+    vc_jwt: str = Field()
 
 
 class StatusListRecord(BaseModel):
