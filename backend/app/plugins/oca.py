@@ -31,7 +31,7 @@ class OCAReader:
         render_overlay = self.get_overlay(bundle, "vc/overlays/render/1.0")
         branding_overlay = self.get_overlay(bundle, "aries/overlays/branding/1.0")
         meta_overlay = self.get_overlay(bundle, "spec/overlays/meta/1.0")
-        
+
         values = {}
         for attribute in paths_overlay["attribute_paths"]:
             jsonpath_expr = parse(paths_overlay["attribute_paths"][attribute])
@@ -40,9 +40,9 @@ class OCAReader:
             ]
         return {
             "values": values,
-            "labels": labels_overlay['attribute_labels'],
-            "descriptions": information_overlay['attribute_information'],
-            "groupings": render_overlay['attribute_groupings'],
+            "labels": labels_overlay["attribute_labels"],
+            "descriptions": information_overlay["attribute_information"],
+            "groupings": render_overlay["attribute_groupings"],
             "meta": meta_overlay,
             "branding": branding_overlay,
         }

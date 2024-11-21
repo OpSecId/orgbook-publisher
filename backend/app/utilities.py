@@ -1,5 +1,6 @@
 import requests
 import base64
+import httpx
 from multiformats import multibase
 from datetime import datetime, timezone, timedelta
 
@@ -12,6 +13,9 @@ MULTIKEY = [
         "bytes_prefix_lenght": 2,
     }
 ]
+
+DEFAULT_ALG = "ed25519"
+ALG_MAPPINGS = {"ed25519": {"prefix_hex": "ed01", "prefix_length": 2}}
 
 
 def timestamp(minutes_forward=0):
@@ -72,3 +76,15 @@ def multikey_to_jwk(multikey):
     return {"kty": "OKP", "crv": crv_from_multikey(multikey)} | get_coordinates(
         multikey
     )
+
+
+def public_bytes_to_multikey(public_bytes, alg=DEFAULT_ALG):
+    prefix_hex = ALG_MAPPINGS[alg]["prefix_hex"]
+    return multibase.encode(
+        bytes.fromhex(f"{prefix_hex}{public_bytes.hex()}"), "base58btc"
+    )
+
+
+def resolve_did_web(self, did):
+    r = httpx.get("https://" + did.lstrip("did:web:").replace(":", "/") + "/did.json")
+    return r.json()

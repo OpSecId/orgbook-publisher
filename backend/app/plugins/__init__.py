@@ -1,4 +1,4 @@
-from .askar import AskarStorage, AskarVerifier, AskarWallet
+from .askar import AskarStorage, AskarVerifier
 from .orgbook import OrgbookPublisher
 from .untp import DigitalConformityCredential
 from .status_list import BitstringStatusList
@@ -10,7 +10,6 @@ from .oca import OCAReader
 __all__ = [
     "AskarVerifier",
     "AskarStorage",
-    "AskarWallet",
     "OrgbookPublisher",
     "BitstringStatusList",
     "OCAReader",

@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, AliasChoices, field_validator
 from . import Credential, CredentialRegistration, IssuanceOptions
 from config import settings
 import json
+import uuid
 from collections import OrderedDict
 
 
@@ -114,17 +115,55 @@ subject_example = {
 }
 
 
-class PublishCredential(BaseModel):
+class PublicationCredential(BaseModel):
     type: str = Field(example="BCPetroleumAndNaturalGasTitleCredential")
-    coreData: CoreData = Field()
-    subjectData: dict = Field(example=subject_example)
-    untpData: UntpData = Field(None)
-    
+    validFrom: str = Field(None, example="2024-11-11T00:00:00Z")
+    validUntil: str = Field(None, example="2025-11-11T00:00:00Z")
+    credentialSubject: dict = Field(
+        example={
+            "titleType": "NaturalGasLease",
+            "titleNumber": "65338",
+            "originType": "DrillingLicense",
+            "originNumber": "42566",
+        }
+    )
+
+
+class PublicationOptions(BaseModel):
+    entityId: str = Field(example="A0131571")
+    credentialId: str = Field(str(uuid.uuid4()), example=str(uuid.uuid4()))
+    cardinalityId: str = Field(example="65338")
+    additionalData: dict = Field(
+        None,
+        example={
+            "wells": [
+                {"type": ["Facility", "Well"], "id": "urn:code:uwi:", "name": ""}
+            ],
+            "tracts": [
+                {
+                    "type": ["Product", "Tract"],
+                    "id": "urn:code:hs:",
+                    "name": "",
+                    "zones": [],
+                    "notes": [],
+                    "rights": [],
+                }
+            ],
+        },
+    )
+
+
+class Publication(BaseModel):
+    credential: PublicationCredential = Field()
+    options: PublicationOptions = Field()
+
+
 class ForwardingOptions(BaseModel):
     entityId: str = Field()
     resourceId: str = Field()
     credentialId: str = Field()
     credentialType: str = Field()
+
 
 class ForwardCredential(BaseModel):
     verifiableCredential: Credential = Field()

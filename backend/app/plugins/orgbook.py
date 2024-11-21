@@ -1,16 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import HTTPException
 from config import settings
-from app.models import Credential
-from app.utilities import freeze_ressource_digest
-from app.plugins import AskarStorage, AskarWallet
-from app.plugins.status_list import BitstringStatusList
-from app.plugins.untp import DigitalConformityCredential
+from app.plugins import AskarStorage
 from app.plugins.traction import TractionController
 
 # from .ips import IPSView
 import requests
-import uuid
-from datetime import datetime
 from app.utilities import timestamp
 
 
@@ -28,12 +22,13 @@ class OrgbookPublisher:
         return {
             "id": f"{settings.ORGBOOK_URL}/entity/{identifier}/type/registration.registries.ca",
             "name": buisness_info["names"][0]["text"],
-            "registeredId": identifier,
         }
 
     async def create_credential_type(self, credential_registration):
+        # TODO, better method for getting verification method
         issuer = credential_registration["issuer"]
         verification_method = f"{issuer}#key-01-multikey"
+
         credential_type = {
             "format": "vc_di",
             "type": credential_registration["type"],
@@ -43,15 +38,21 @@ class OrgbookPublisher:
             "ocaBundle": {},
             "topic": {
                 "type": "registration.registries.ca",
-                "sourceId": {
-                    "path": credential_registration["coreMappings"]["entityId"]
-                },
+                "sourceId": {"path": credential_registration["corePaths"]["entityId"]},
             },
             "mappings": [
                 {"path": "$.validFrom", "type": "effective_date", "name": "validFrom"},
                 {"path": "$.validUntil", "type": "expiry_date", "name": "validUntil"},
             ],
         }
+        # for attribute in credential_registration['subjectPaths']:
+        #     credential_type['mappings'].append(
+        #         {
+        #             "path": credential_registration['subjectPaths'][attribute],
+        #             "type": "",
+        #             "name": attribute
+        #         }
+        #     )
         proof_options = {
             "type": "DataIntegrityProof",
             "cryptosuite": "eddsa-jcs-2022",
@@ -76,58 +77,6 @@ class OrgbookPublisher:
         traction.authorize()
         vc = traction.issue_vc(credential)
         self.forward_credential(vc, credential_registration)
-
-    async def format_credential(self, data, credential_registration, credential_id):
-        entity = self.fetch_buisness_info(data["core"]["entityId"])
-        try:
-            credential_template = await AskarStorage().fetch(
-                "credentialTemplate", credential_registration['type']
-            )
-        except:
-            raise HTTPException(status_code=404, detail="Unknown credential type.")
-        credential = credential_template.copy()
-
-        if not data["core"].get("validFrom"):
-            data["core"]["validFrom"] = timestamp()
-
-        if not data["core"].get("validUntil"):
-            data["core"]["validUntil"] = timestamp(525960)
-
-        credential["validFrom"] = data["core"]["validFrom"]
-        credential["validUntil"] = data["core"]["validUntil"]
-
-        # UNTP type and context
-        if "untpType" in credential_registration:
-            credential["credentialSubject"]["issuedToParty"]["id"] = entity["id"]
-            credential["credentialSubject"]["issuedToParty"]["name"] = entity["name"]
-            credential["credentialSubject"]["issuedToParty"]["registeredId"] = entity[
-                "registeredId"
-            ]
-
-            # DigitalConformityCredential template
-            if credential_registration["untpType"] == "DigitalConformityCredential":
-                for property in data["subject"]:
-                    credential["credentialSubject"][property] = data["subject"][
-                        property
-                    ]
-
-                credential["credentialSubject"]["assessment"][0]["assessedProduct"] = (
-                    data["untp"]["assessedProduct"]
-                )
-                credential["credentialSubject"]["assessment"][0]["assessedFacility"] = (
-                    data["untp"]["assessedFacility"]
-                )
-
-        credential["credentialStatus"] = [
-            await BitstringStatusList().create_entry(
-                credential_registration["statusList"][0], "revocation"
-            ),
-            await BitstringStatusList().create_entry(
-                credential_registration["statusList"][0], "update"
-            ),
-        ]
-        credential["id"] = f"https://{settings.DOMAIN}/credentials/{credential_id}"
-        return credential
 
     async def store_credential(self, vc, credential_registration):
         pass

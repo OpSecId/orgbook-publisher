@@ -28,45 +28,31 @@ class BitstringStatusList:
         statusListBitstring = statusListBitarray.bin
         return statusListBitstring
 
-    async def create(self, credential_registration):
+    async def create(self, id=None, issuer=None, purpose="revocation", length=200000):
         # https://www.w3.org/TR/vc-bitstring-status-list/#example-example-bitstringstatuslistcredential
-        # status_list_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, self.did_key))
-        # id_string = credential_registration["type"] + credential_registration["version"]
-        # status_list_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, id_string))
-        status_list_id = str(uuid.uuid4())
         status_list_credential = {
             "@context": [
                 "https://www.w3.org/ns/credentials/v2",
             ],
             "type": ["VerifiableCredential", "BitstringStatusListCredential"],
-            "id": f"https://{settings.DOMAIN}/credentials/status/{status_list_id}",
-            "issuer": {"id": credential_registration["issuer"]},
             "credentialSubject": {
                 "type": "BitstringStatusList",
-                "encodedList": self.generate(str(0) * self.length),
-                "statusPurpose": ["revocation", "suspension", "update"],
+                "encodedList": self.generate(str(0) * length),
+                "statusPurpose": purpose,
             },
         }
-        try:
-            await AskarStorage().store(
-                "statusListCredential", status_list_id, status_list_credential
-            )
-            await AskarStorage().store(
-                "statusListEntries", status_list_id, [0, self.length - 1]
-            )
-        except:
-            pass
-        return status_list_id
-    
+        if id:
+            status_list_credential["id"] = id
+        if issuer:
+            status_list_credential["issuer"] = issuer
+
+        return status_list_credential
+
     async def find_index(self, status_list_id):
         storage = AskarStorage()
-        status_entries = await storage.fetch("statusListEntries", status_list_id)
-        # Find an unoccupied index
-        status_index = random.choice(
-            [e for e in range(self.length - 1) if e not in status_entries]
-        )
-        status_entries.append(status_index)
-        await storage.update("statusListEntries", status_list_id, status_entries)
+        status_entries = await storage.fetch("statusListIndexes", status_list_id)
+        status_index = status_entries.pop()
+        await storage.update("statusListIndexes", status_list_id, status_entries)
         return status_index
 
     async def create_entry(self, status_list_id, purpose="revocation"):
@@ -75,12 +61,12 @@ class BitstringStatusList:
         status_index = await self.find_index(status_list_id)
 
         status_credential = await storage.fetch("statusListCredential", status_list_id)
-        credential_status_id = status_credential["id"]
+        # credential_status_id = status_credential["id"]
         credential_status_entry = {
-            "id": f"{credential_status_id}#{status_index}",
+            # "id": f"{credential_status_id}#{status_index}",
             "type": "BitstringStatusListEntry",
             "statusPurpose": purpose,
-            "statusListIndex": status_index,
+            "statusListIndex": str(status_index),
             "statusListCredential": status_credential["id"],
         }
 
@@ -88,7 +74,7 @@ class BitstringStatusList:
 
     def get_credential_status(self, vc):
         # https://www.w3.org/TR/vc-bitstring-status-list/#validate-algorithm
-        statusListIndex = vc["credentialStatus"]["statusListIndex"]
+        statusListIndex = int(vc["credentialStatus"]["statusListIndex"])
         statusListCredentialUri = vc["credentialStatus"]["statusListCredential"]
 
         r = requests.get(statusListCredentialUri)

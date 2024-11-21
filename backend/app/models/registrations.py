@@ -1,5 +1,6 @@
 from typing import Dict, Any, List
 from pydantic import BaseModel, Field, field_validator
+from pydantic.json_schema import SkipJsonSchema
 from config import settings
 
 
@@ -14,19 +15,9 @@ class IssuerRegistration(BaseModel):
     description: str = Field(
         example="An officer or employee of the ministry who is designated as the Director of Petroleum Lands by the minister."
     )
-    url: str = Field(
-        None,
-        example="https://www2.gov.bc.ca/gov/content/governments/organizational-structure/ministries-organizations/ministries/energy-mines-and-petroleum-resources",
-    )
-    # image: str = Field(None, example="https://")
-    multikey: str = Field(
+    multikey: SkipJsonSchema[str] = Field(
         None, example="z6MkkuJkRuYpHkycUYUnBmUzN5cerBjdhDFC3tEBXfSD6Zr8"
     )
-
-
-class RelatedResource(BaseModel):
-    id: str = Field()
-    type: str = Field()
 
 
 class RelatedResources(BaseModel):
@@ -37,28 +28,24 @@ class RelatedResources(BaseModel):
         None,
         example="https://www.bclaws.gov.bc.ca/civix/document/id/complete/statreg/00_96361_01",
     )
-    ocaBundle: str = Field(None, example="")
     governance: str = Field(
         None,
         example="https://bcgov.github.io/digital-trust-toolkit/docs/governance/pilots/bc-petroleum-and-natural-gas-title",
     )
 
 
+class CorePaths(BaseModel):
+    entityId: str = Field(example="$.credentialSubject.issuedToParty.registeredId")
+    cardinalityId: str = Field(example="$.credentialSubject.titleNumber")
+
+
 class CredentialRegistration(BaseModel):
     type: str = Field("BCPetroleumAndNaturalGasTitleCredential")
-    subjectType: str = Field("PetroleumAndNaturalGasTitle")
-    untpType: str = Field(None, example="DigitalConformityCredential")
-    version: str = Field(example="v1.0")
-    issuer: str = Field(
-        example=f'did:web:{settings.TDW_SERVER_URL.split("//")[-1]}:petroleum-and-natural-gas-act:director-of-petroleum-lands'
-    )
-    coreMappings: Dict[str, str] = Field(
-        example={
-            "entityId": "$.credentialSubject.issuedToParty.registeredId",
-            "resourceId": "$.credentialSubject.titleNumber",
-        }
-    )
-    subjectMappings: Dict[str, str] = Field(
+    version: str = Field(example="1.0")
+    issuer: str = Field(example="did:web:")
+    corePaths: CorePaths = Field()
+    subjectType: str = Field(None, example="PetroleumAndNaturalGasTitle")
+    subjectPaths: Dict[str, str] = Field(
         example={
             "titleType": "$.credentialSubject.titleType",
             "titleNumber": "$.credentialSubject.titleNumber",
@@ -67,20 +54,19 @@ class CredentialRegistration(BaseModel):
             "caveats": "$.credentialSubject.caveats",
         }
     )
+    additionalType: str = Field(None, example="DigitalConformityCredential")
+    additionalPaths: Dict[str, str] = Field(
+        None,
+        example={
+            "wells": "$.credentialSubject.assessment[0].assessedFacility",
+            "tracts": "$.credentialSubject.assessment[0].assessedProduct",
+        },
+    )
     relatedResources: RelatedResources = Field()
 
-    @field_validator("untpType")
+    @field_validator("additionalType")
     @classmethod
     def validate_untp_type(cls, value):
         if value not in ["DigitalConformityCredential"]:
             raise ValueError(f"Unsupported UNTP type {value}.")
-        return value
-
-    @field_validator("relatedResources")
-    @classmethod
-    def validate_related_resources(cls, value):
-        if not value.context:
-            raise ValueError("Context is required.")
-        # if not value.ocaBundle:
-        #     raise ValueError("OCA Bundle is required.")
         return value

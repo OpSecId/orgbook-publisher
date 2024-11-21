@@ -1,30 +1,36 @@
 {
     "capture_base": {
         "type": "spec/capture_base/1.0",
+        "digest": "",
         "attributes": {
-            "titleType": "Text",
-            "titleNumber": "Number",
-            "originType": "Text",
-            "originNumber": "Number",
-            "caveats": "List[Text]",
             "entityId": "Text",
-            "entityName": "Text"
+            "entityName": "Text",
+            "titleType": "Text",
+            "titleNumber": "Text",
+            "originType": "Text",
+            "originNumber": "Text",
+            "caveats": "List[Text]"
         }
     },
     "overlays": [
         {
             "type": "spec/overlays/label/1.0",
+            "digest": "",
+            "lang": "en",
             "attribute_labels": {
-                "titleType": "Type",
-                "titleNumber": "Number",
+                "entityId": "BC Registration",
+                "entityName": "Legal Name",
+                "titleType": "Title Type",
+                "titleNumber": "Title Number",
                 "originType": "Origin Type",
                 "originNumber": "Origin Number",
-                "entityId": "BC Registration Id",
-                "entityName": "Business Name"
+                "caveats": "Title Caveats"
             }
         },
         {
             "type": "spec/overlays/information/1.0",
+            "digest": "",
+            "lang": "en",
             "attribute_information": {
                 "titleType": "This field specifies the type of title based on the PNG Act. Title types can include the following: 1. Lease (Part 6); 2. Permit (Part 5); 3. Drilling Licence (Part 5.1), and 4. Storage Reservoir Licence (Part 14.130). Each title has only one title type.",
                 "titleNumber": "A number is used to uniquely identify a title, assigned based on administrative policy by the Tenure and Resource Stewardship Branch (TRSB). The title number is associated with the Exploration Licence outlined in Section 126, Part 14.126 of the PNG Act.",
@@ -37,6 +43,7 @@
         },
         {
             "type": "vc/overlays/paths/1.0",
+            "digest": "",
             "attribute_paths": {
                 "titleType": "$.credentialSubject.titleType",
                 "titleNumber": "$.credentialSubject.titleNumber",
@@ -48,19 +55,10 @@
             }
         },
         {
-            "type": "vc/overlays/pointers/1.0",
-            "attribute_pointers": {
-                "titleType": "/credentialSubject/titleType",
-                "titleNumber": "/credentialSubject/titleNumber",
-                "originType": "/credentialSubject/originType",
-                "originNumber": "/credentialSubject/originNumber",
-                "caveats": "/credentialSubject/caveats"
-            }
-        },
-        {
-            "type": "vc/overlays/render/1.0",
-            "media_type": "text/html",
-            "attribute_groupings": {
+            "type": "vc/overlays/clusters/1.0",
+            "digest": "",
+            "lang": "en",
+            "attribute_clusters": {
                 "Holder": [
                     "entityId",
                     "entityName"
@@ -71,22 +69,16 @@
                     "originType",
                     "originNumber"
                 ]
-            },
-            "render_template": "urn:bcgov:template:vc-card"
+            }
         },
         {
             "type": "aries/overlays/branding/1.0",
+            "digest": "",
             "primary_attribute": "titleType",
             "secondary_attribute": "entityName",
             "primary_background_color": "#003366",
             "secondary_background_color": "#00264D",
             "logo": "https://avatars.githubusercontent.com/u/916280"
-        },
-        {
-            "type": "spec/overlays/meta/1.0",
-            "name": "BC Petroleum and Natural Gas Title",
-            "description": "The majority of subsurface petroleum and natural gas (PNG) resources in British Columbia (B.C.) are owned by the Province. By entering into a tenure agreement with the Province, private industry can develop these resources. Tenure agreements are the mechanism used by the Province to give rights to petroleum and natural gas resources through issuance of Petroleum and Natural Gas Titles.",
-            "issuer": "Director of Petroleum Lands"
         }
     ]
 }

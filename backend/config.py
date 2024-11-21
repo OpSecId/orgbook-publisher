@@ -17,40 +17,27 @@ class Settings(BaseSettings):
     LOGGER: Logger = logging.getLogger(__name__)
     logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
 
-    DOMAIN: str = os.environ["DOMAIN"]
+    DOMAIN: str = os.getenv("DOMAIN") or "localhost"
 
-    TRACTION_API_URL: str = os.environ["TRACTION_API_URL"]
-    TRACTION_API_KEY: str = os.environ["TRACTION_API_KEY"]
-    TRACTION_TENANT_ID: str = os.environ["TRACTION_TENANT_ID"]
+    TRACTION_API_URL: str = os.getenv("TRACTION_API_URL")
+    TRACTION_API_KEY: str = os.getenv("TRACTION_API_KEY") or "api_key"
+    TRACTION_TENANT_ID: str = os.getenv("TRACTION_TENANT_ID")
 
-    ORGBOOK_URL: str = os.environ["ORGBOOK_URL"]
+    ORGBOOK_URL: str = os.getenv("ORGBOOK_URL")
     ORGBOOK_API_URL: str = f"{ORGBOOK_URL}/api/v4"
     ORGBOOK_VC_SERVICE: str = f"{ORGBOOK_URL}/api/vc"
 
-    TDW_SERVER_URL: str = os.environ["TDW_SERVER_URL"]
-    TDW_ENDORSER_MULTIKEY: str = os.environ["TDW_ENDORSER_MULTIKEY"]
+    TDW_SERVER_URL: str = os.getenv("TDW_SERVER_URL")
+    PUBLISHER_MULTIKEY: str = os.getenv("TDW_ENDORSER_MULTIKEY")
 
-    ISSUER_REGISTRY_URL: str = os.environ["ISSUER_REGISTRY_URL"]
+    ISSUER_REGISTRY_URL: str = os.getenv("ISSUER_REGISTRY_URL")
 
-    # AGENT_ADMIN_URL: str = os.environ["AGENT_ADMIN_URL"]
-    # AGENT_ADMIN_API_KEY: str = TRACTION_API_KEY
+    SECRET_KEY: str = TRACTION_API_KEY
+    JWT_SECRET: str = TRACTION_API_KEY
+    JWT_ALGORITHM: str = "HS256"
 
-    # SECRET_KEY: str = TRACTION_API_KEY
-
-    ASKAR_DB: str = (
-        os.environ["POSTGRES_URI"]
-        if "POSTGRES_URI" in os.environ
-        else "sqlite://app.db"
-    )
-
-    # ISSUERS: list = [
-    #     {
-    #         "id": f"did:web:{DOMAIN}:petroleum-and-natural-gas-act:director-of-petroleum-lands",
-    #         "name": "Director of Petroleum Lands",
-    #         "description": "An officer or employee of the ministry who is designated as the Director of Petroleum Lands by the minister.",
-    #         "url": "https://www2.gov.bc.ca/gov/content/governments/organizational-structure/ministries-organizations/ministries/energy-mines-and-petroleum-resources",
-    #     }
-    # ]
+    ASKAR_DB: str = os.getenv("POSTGRES_URI") or "sqlite://app.db"
+    MONGO_DB: str = os.getenv("MONGODB_URI") or "mongodb://localhost:27017/"
 
 
 settings = Settings()

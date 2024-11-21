@@ -1,6 +1,6 @@
 FROM python:3.12
 
-WORKDIR /orgbook-publisher-backend
+WORKDIR /fastapi
 
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV

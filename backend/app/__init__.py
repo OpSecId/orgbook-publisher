@@ -1,9 +1,14 @@
-import logging
 from fastapi import FastAPI, APIRouter
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.routers import registrations, credentials, integration
+from app.routers import (
+    authentication,
+    registrations,
+    credentials,
+    integration,
+    related_resources,
+)
 from config import settings
 
 app = FastAPI(title=settings.PROJECT_TITLE, version=settings.PROJECT_VERSION)
@@ -27,9 +32,11 @@ async def server_status():
     return JSONResponse(status_code=200, content={"status": "ok"})
 
 
-api_router.include_router(integration.router)
-api_router.include_router(credentials.router)
+api_router.include_router(authentication.router)
 api_router.include_router(registrations.router)
+api_router.include_router(credentials.router)
+api_router.include_router(related_resources.router)
+api_router.include_router(integration.router)
 
 
 app.include_router(api_router)

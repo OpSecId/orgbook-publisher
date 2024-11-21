@@ -1,15 +1,16 @@
 from config import settings
 import requests
 from fastapi import HTTPException
-from app.utilities import timestamp, verkey_to_multikey
-from app.plugins.askar import AskarStorage, AskarWallet
+from app.utilities import verkey_to_multikey
+from app.plugins.askar import AskarStorage
 import httpx
+from app.models.mongoDbRecords import IssuerRecord
 
 
 class TractionController:
     def __init__(self):
         self.default_kid = "key-01"
-        self.endorser_key = settings.TDW_ENDORSER_MULTIKEY
+        self.endorser_key = settings.PUBLISHER_MULTIKEY
         self.endpoint = settings.TRACTION_API_URL
         self.tenant_id = settings.TRACTION_TENANT_ID
         self.api_key = settings.TRACTION_API_KEY
@@ -23,7 +24,7 @@ class TractionController:
             raise HTTPException(
                 status_code=response.status_code, detail=response.json()
             )
-        
+
     async def provision_tdw(self):
         self.authorize()
         settings.LOGGER.info("Fetching issuer registry")
@@ -31,17 +32,24 @@ class TractionController:
         issuers = r.json()["issuers"]
         for issuer in issuers:
             settings.LOGGER.info(issuer["name"])
-            authorized_key = self.get_multikey(issuer["id"])
-            # print(authorized_key)
-            # did_document = AskarWallet().resolve_did_web(issuer["id"])
-            # try:
-            #     await self.store("issuer", did_document["id"], did_document)
-            #     await AskarStorage().store(
-            #         "authorizedKey", did_document["id"], authorized_key
-            #     )
-            # except:
-            #     pass
-
+            try:
+                did_document = self.resolve(issuer.get("id"))
+                authorized_key = self.get_multikey(issuer.get('id'))
+            except:
+                pass
+            settings.LOGGER.info(did_document["id"])
+            issuer = IssuerRecord(
+                id=did_document.get('id'),
+                name=did_document.get("name"),
+                description=did_document.get("description"),
+                authorized_key=authorized_key,
+                secret_hash='',
+                did_document=did_document,
+            ).model_dump()
+            try:
+                await AskarStorage().replace("issuerRecord", did_document["id"], issuer)
+            except:
+                pass
 
     def authorize(self):
         r = requests.post(
@@ -52,12 +60,12 @@ class TractionController:
         self.headers = {"Authorization": f"Bearer {token}"}
 
     def resolve(self, did):
-        r = requests.post(
-            f"{self.endpoint}/multitenancy/tenant/{self.tenant_id}/token",
-            json={"api_key": self.api_key},
+        r = requests.get(
+            f"{self.endpoint}/resolver/resolve/{did}",
+            headers=self.headers,
         )
-        token = self._try_response(r, "token")
-        self.headers = {"Authorization": f"Bearer {token}"}
+        did_document = self._try_response(r, "did_document")
+        return did_document
 
     def create_did_key(self):
         r = requests.post(
@@ -69,10 +77,7 @@ class TractionController:
         return did_info["did"].split(":")[-1]
 
     def get_multikey(self, did):
-        r = requests.get(
-            f"{self.endpoint}/wallet/did?did={did}",
-            headers=self.headers
-        )
+        r = requests.get(f"{self.endpoint}/wallet/did?did={did}", headers=self.headers)
         did_info = self._try_response(r, "results")[0]
         return verkey_to_multikey(did_info["verkey"])
 
