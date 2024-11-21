@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Header, Response
 from fastapi.responses import JSONResponse
+from fastapi.templating import Jinja2Templates
 from app.models.web_schemas import (
     IssueCredential,
     Publication,
@@ -123,6 +124,32 @@ async def get_credential(credential_id: str, request: Request):
         #         'updated': False
         #     }
         # )
+        branding = {
+            'logo': 'https://avatars.githubusercontent.com/u/916280'
+        }
+        meta = {
+            'name': vc['name'],
+            'issuer': vc['issuer']['name'],
+        }
+        values = {
+            'cardinalityId': credential_record['cardinalityId'],
+            'entityId': vc['credentialSubject']['issuedToParty']['registeredId'],
+            'entityName': vc['credentialSubject']['issuedToParty']['name'],
+        }
+        context = {
+            'title': credential_record['type'],
+            'branding': branding,
+            'meta': meta,
+            'values': values,
+            "qrcode": segno.make(vc["id"]),
+            'vc': vc,
+            'jwt': vc_jwt
+        }
+        return Jinja2Templates(directory="app/templates").TemplateResponse(
+            request=request,
+            name="minimal.jinja",
+            context=context
+        )
         return JSONResponse(headers={"Content-Type": "application/vc"}, content=vc)
 
 

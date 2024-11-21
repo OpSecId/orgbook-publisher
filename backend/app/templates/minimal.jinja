@@ -1,0 +1,62 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>{{ title }}</title>
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <link href="https://preview.tabler.io/dist/css/tabler.min.css" rel="stylesheet">
+</head>
+
+<body class=" d-flex flex-column">
+    <div class="page page-center">
+        <div class="container container-tight py-4">
+            <div class="card card-md">
+                <div class="card-header">
+                    <div class="badges-list centered">
+                        <span onclick="copyJson({{vc}})" class="badge badge-outline">VC</span>
+                        <span onclick="copyString('{{jwt}}')" class="badge badge-outline">JWT</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div>
+                        <div class="row">
+                            <div class="col-auto">
+                                <span class="avatar avatar-xl rounded"
+                                    style="background-image: url({{branding['logo']}})"></span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">{{meta['issuer']}}</div>
+                                <div class="text-secondary">{{meta['name']}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                        <div class="row">
+                            <div class="col-auto">
+                                <span>{{ qrcode.svg_inline(scale=3) | safe }}</span>
+                            </div>
+                            <div class="col">
+                                <div class="font-weight-medium">{{values['entityName']}}</div>
+                                <div class="text-secondary">{{values['entityId']}}</div>
+                                <div class="text-secondary">{{values['cardinalityId']}}</div>
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://preview.tabler.io/dist/js/tabler.min.js"></script>
+    <script>
+        function copyJson(content) {
+            navigator.clipboard.writeText(JSON.stringify(content, null, 2));
+        }
+    </script>
+    <script>
+        function copyString(content) {
+            navigator.clipboard.writeText(content);
+        }
+    </script>
+</body>
+
+</html>
